@@ -3,13 +3,143 @@
     <title>Greenlock&trade;</title>
   </head>
   <body>
-    <form>
+
+    <!-- Step 1 Choose Domain(s) -->
+    <form class="js-acme-form js-acme-form-domains">
       <label>What's your domain?</label>
-      <input type="text" placeholder="www.example.com">
+      <input class="js-acme-domains" type="text" placeholder="example.com,*.example.com" required>
       <button type="submit">Next</button>
     </form>
 
+    <!-- Step 2 Create Account -->
+    <form class="js-acme-form js-acme-form-account">
+      <label>What's your email?</label>
+      <input class="js-acme-account-email" type="email" placeholder="john@doe.family" required>
+      <label><input class="js-acme-account-tos" type="checkbox" required>
+        Agree to <a class="js-le-tos">Let's Encrypt Terms of Service</a>?</label>
+      <label><input class="js-greenlock-account-tos" type="checkbox" required>
+        Agree to <a class="js-gl-tos">Greenlock Terms of Service</a>?</label>
+      <a href="#">advanced (use existing account)</a>
+      <button type="submit">Next</button>
+    </form>
+
+    <!-- Step 3 Set Challanges -->
+    <form class="js-acme-form js-acme-form-challenges">
+      <label>How will you validate your domain?</label>
+      <label><input class="js-acme-challenge-type" type="radio" value="http-01" checked required>
+        File Upload to HTTP Web Server</label>
+      <label><input class="js-acme-challenge-type" type="radio" value="dns-01" required>
+        TXT Records on DNS Name Server</label>
+
+      Verify Domains &amp; Sub-Domains:
+
+      <table class="js-acme-table-http-01">
+        <thead>
+          <tr>
+            <th>Hostname</th>
+            <th>File Location</th>
+            <th>File Contents</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>example.com</td>
+            <td>.well-known/acme-challenge/xxx</td>
+            <td>sec.ret</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="js-acme-table-dns-01">
+        <thead>
+          <tr>
+            <th>Hostname</th>
+            <th>TXT Host</th>
+            <th>TXT Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>example.com</td>
+            <td>_acme-challenge.example.com</td>
+            <td>4A54</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="js-acme-wildcards">
+        Verify Wildcard Domains:
+
+        <table class="js-acme-table-wildcards">
+          <thead>
+            <tr>
+              <th>Hostname</th>
+              <th>TXT Host</th>
+              <th>TXT Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>example.com</td>
+              <td>_acme-challenge.example.com</td>
+              <td>4A54</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button type="submit">Next</button>
+    </form>
+
+    <!-- Step 4 Process Challanges -->
+    <form class="js-acme-form js-acme-form-poll">
+      Verifying Domains...
+
+      <table class="js-acme-table-verifying">
+        <thead>
+          <tr>
+            <th>Hostname</th>
+            <th>Type</th>
+            <th>Pass</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>example.com</td>
+            <td>http-01</td>
+            <td>-</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <a href="#">advanced (use existing keypair for domain)</a>
+
+      <button type="submit">Next</button>
+    </form>
+
+    <!-- Step 4 Process Challanges -->
+    <form class="js-acme-form js-acme-form-download">
+      <label>privkey.pem</label>
+      <textarea>-</textarea>
+
+      <label>fullchain.pem</label>
+      <textarea>-</textarea>
+
+      <label>cert.pem</label>
+      <textarea>-</textarea>
+
+      <label>chain.pem</label>
+      <textarea>-</textarea>
+
+      <button type="button">Download SSL Certificates</button>
+
+      <a href="#">Advanced (copy and paste)</a>
+
+      <button type="submit">Start Over</button>
+    </form>
+
     <input class="js-acme-directory-url" type="url" placeholder="ACME directory url">
+
     <script src="./js/pkijs.org/v1.3.33/common.js"></script>
     <script src="./js/pkijs.org/v1.3.33/asn1.js"></script>
     <script src="./js/pkijs.org/v1.3.33/x509_schema.js"></script>

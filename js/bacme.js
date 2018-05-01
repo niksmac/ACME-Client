@@ -8,13 +8,13 @@ var webCrypto = exports.crypto;
 var directoryUrl = 'https://acme-staging-v02.api.letsencrypt.org/directory';
 var directory;
 
-var nonceUrl = directory.newNonce || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-nonce';
+var nonceUrl;
 var nonce;
 
 var accountKeypair;
 var accountJwk;
 
-var accountUrl = directory.newAccount;
+var accountUrl;
 var signedAccount;
 
 BACME.challengePrefixes = {
@@ -38,6 +38,9 @@ BACME.directory = function (url) {
 		BACME._logHeaders(resp);
 		return resp.json().then(function (body) {
 			directory = body;
+      nonceUrl = directory.newNonce || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-nonce';
+      accountUrl = directory.newAccount || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-account';
+      orderUrl = directory.newOrder || "https://acme-staging-v02.api.letsencrypt.org/acme/new-order";
       BACME._logBody(body);
       return body;
 		});
@@ -169,7 +172,7 @@ BACME.accounts.set = function () {
 	});
 };
 
-var orderUrl = directory.newOrder || "https://acme-staging-v02.api.letsencrypt.org/acme/new-order";
+var orderUrl;
 var signedOrder;
 
 BACME.orders = {};
@@ -305,7 +308,8 @@ BACME.challenges['http-01'] = function () {
     path: httpPath
   , value: keyAuth
   };
-});
+};
+
 BACME.challenges['dns-01'] = function () {
 	return window.crypto.subtle.digest(
 		{ name: "SHA-256", }
@@ -326,7 +330,7 @@ BACME.challenges['dns-01'] = function () {
     return {
       type: 'TXT'
     , host: dnsRecord
-    , answer: dnsAuth;
+    , answer: dnsAuth
     };
 	});
 };
@@ -424,13 +428,13 @@ BACME.domains.generateKeypair = function () {
 	});
 };
 
-BACME.order.generateCsr = function (keypair, domains) {
+BACME.orders.generateCsr = function (keypair, domains) {
   return Promise.resolve(CSR.generate(keypair, domains));
 };
 
 var certificateUrl;
 
-BACME.order.finalize = function () {
+BACME.orders.finalize = function () {
 	var payload64 = jsto64(
 		{ csr: csr }
 	);
