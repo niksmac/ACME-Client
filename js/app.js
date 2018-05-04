@@ -72,7 +72,7 @@
       if (a > b) { return -1; }
     });
 
-    return BACME.directory($qs('.js-acme-directory-url').value).then(function (directory) {
+    return BACME.directory({ directoryUrl: $qs('.js-acme-directory-url').value }).then(function (directory) {
       $qs('.js-acme-tos-url').href = directory.meta.termsOfService;
       return BACME.nonce().then(function (_nonce) {
         nonce = _nonce;

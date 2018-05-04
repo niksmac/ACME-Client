@@ -34,14 +34,20 @@
       <h1><label>What's your email?</label></h1>
       <input class="js-acme-account-email" type="email" placeholder="john@doe.family" required>
       <br>
+      <br>
       <label><input class="js-acme-account-tos" type="checkbox" required>
         Agree to <a class="js-acme-tos-url" target="acme-tos">Let's Encrypt Terms of Service</a>?</label>
+      <br>
       <br>
       <label><input class="js-greenlock-account-tos" type="checkbox" required>
         Agree to <a class="js-gl-tos">Greenlock Terms of Service</a>?</label>
       <br>
+      <br>
+      <!--
       <a href="#">advanced (use existing account)</a>
       <br>
+      <br>
+      -->
       <button type="submit">Next</button>
     </form>
 
@@ -152,12 +158,12 @@
     <form class="js-acme-form js-acme-form-download">
       <div>
       <h2><label>privkey.pem</label></h2>
-      <textarea class="js-privkey">-</textarea>
+      <textarea cols="80" rows="10" class="js-privkey">-</textarea>
       </div>
 
       <div>
       <h2><label>fullchain.pem</label></h2>
-      <textarea class="js-fullchain">-</textarea>
+      <textarea cols="80" rows="60" class="js-fullchain">-</textarea>
       </div>
 
       <div>

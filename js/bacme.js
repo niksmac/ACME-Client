@@ -33,8 +33,8 @@ BACME._logBody = function (body) {
 	console.log('');
 };
 
-BACME.directory = function (url) {
-	return webFetch(directoryUrl, { mode: 'cors' }).then(function (resp) {
+BACME.directory = function (opts) {
+	return webFetch(opts.directoryUrl || directoryUrl, { mode: 'cors' }).then(function (resp) {
 		BACME._logHeaders(resp);
 		return resp.json().then(function (body) {
 			directory = body;
