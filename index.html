@@ -3,37 +3,63 @@
     <title>Greenlock&trade;</title>
   </head>
   <body>
+    <div>
+      <br>
+      <h3>Greenlock&trade; - Instant, Free SSL Certificates via Let's Encrypt v2</h3>
+      <br>
+      <br>
+      <br>
+    </div>
 
     <!-- Step 1 Choose Domain(s) -->
     <form class="js-acme-form js-acme-form-domains">
-      <label>What's your domain?</label>
+      <h1><label>What's your domain?</label></h1>
       <input class="js-acme-domains" type="text" placeholder="example.com,*.example.com" required>
+      <br>
       <button type="submit">Next</button>
+
+      <br>
+      <br>
+      <br>
+      <label><input class="js-acme-api-type" name="acme-api-type" type="radio" value="v02" checked required>
+        Production</label>
+      <label><input class="js-acme-api-type" name="acme-api-type" type="radio" value="staging-v02" required>
+        Testing</label>
+      <br>
+      <input class="js-acme-directory-url" type="url" placeholder="ACME directory url">
     </form>
 
     <!-- Step 2 Create Account -->
     <form class="js-acme-form js-acme-form-account">
-      <label>What's your email?</label>
+      <h1><label>What's your email?</label></h1>
       <input class="js-acme-account-email" type="email" placeholder="john@doe.family" required>
+      <br>
       <label><input class="js-acme-account-tos" type="checkbox" required>
         Agree to <a class="js-acme-tos-url" target="acme-tos">Let's Encrypt Terms of Service</a>?</label>
+      <br>
       <label><input class="js-greenlock-account-tos" type="checkbox" required>
         Agree to <a class="js-gl-tos">Greenlock Terms of Service</a>?</label>
+      <br>
       <a href="#">advanced (use existing account)</a>
+      <br>
       <button type="submit">Next</button>
     </form>
 
     <!-- Step 3 Set Challanges -->
     <form class="js-acme-form js-acme-form-challenges">
-      <div class="js-acme-challenges">
 
-      <label>How will you validate your domain?</label>
+      <h1>How will you validate your domain?</h1>
+      <br>
       <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
         File Upload to HTTP Web Server</label>
+      <br>
       <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
         TXT Records on DNS Name Server</label>
+      <br>
 
-      Verify Domains &amp; Sub-Domains:
+      <div class="js-acme-challenges">
+
+      <h2>Verify Domains &amp; Sub-Domains</h2>
 
       <table class="js-acme-table-http-01">
         <thead>
@@ -71,7 +97,7 @@
       </div>
 
       <div class="js-acme-wildcard">
-        Verify Wildcard Domains:
+        <h2>Verify Wildcard Domains</h2>
 
         <table class="js-acme-table-wildcard">
           <thead>
@@ -96,8 +122,9 @@
 
     <!-- Step 4 Process Challanges -->
     <form class="js-acme-form js-acme-form-poll">
-      Verifying Domains...
+      Verifying Domains... (give us 5 seconds or so...)
 
+      <!--
       <table class="js-acme-table-verifying">
         <thead>
           <tr>
@@ -118,17 +145,18 @@
       <a href="#">advanced (use existing keypair for domain)</a>
 
       <button type="submit">Next</button>
+      -->
     </form>
 
     <!-- Step 5 Get Certs -->
     <form class="js-acme-form js-acme-form-download">
       <div>
-      <h3><label>privkey.pem</label></h3>
+      <h2><label>privkey.pem</label></h2>
       <textarea class="js-privkey">-</textarea>
       </div>
 
       <div>
-      <h3><label>fullchain.pem</label></h3>
+      <h2><label>fullchain.pem</label></h2>
       <textarea class="js-fullchain">-</textarea>
       </div>
 
@@ -163,8 +191,6 @@ var server = https.createServer({
       <button type="submit">Start Over</button>
       -->
     </form>
-
-    <input class="js-acme-directory-url" type="url" placeholder="ACME directory url">
 
     <script src="./js/pkijs.org/v1.3.33/common.js"></script>
     <script src="./js/pkijs.org/v1.3.33/asn1.js"></script>

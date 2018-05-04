@@ -9,8 +9,18 @@
   var kid;
   var i = 1;
 
-  //$qs('.js-acme-directory-url').value = 'https://acme-v02.api.letsencrypt.org/directory';
-  $qs('.js-acme-directory-url').value = 'https://acme-staging-v02.api.letsencrypt.org/directory';
+  var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
+  function updateApiType() {
+    var input = this || Array.prototype.filter.call(
+      $qsa('.js-acme-api-type'), function ($el) { return $el.checked; }
+    )[0];
+    console.log('ACME api type radio:', input.value);
+    $qs('.js-acme-directory-url').value = apiUrl.replace(/{{env}}/g, input.value);
+  }
+  $qsa('.js-acme-api-type').forEach(function ($el) {
+    $el.addEventListener('change', updateApiType);
+  });
+  updateApiType();
 
   function hideForms() {
     $qsa('.js-acme-form').forEach(function (el) {
