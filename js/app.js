@@ -30,7 +30,9 @@
     });
   });
   function updateChallengeType() {
-    var input = this || $qs('.js-acme-challenge-type');
+    var input = this || Array.prototype.filter.call(
+      $qsa('.js-acme-challenge-type'), function ($el) { return $el.checked; }
+    )[0];
     console.log('ch type radio:', input.value);
     $qs('.js-acme-table-wildcard').hidden = true;
     $qs('.js-acme-table-http-01').hidden = true;
@@ -200,7 +202,6 @@
                       , dnsAnswer: dnsAuth.answer
                       };
 
-                      obj[c.type].push(data);
                       console.log('');
                       console.log('CHALLENGE');
                       console.log(claim);
@@ -258,9 +259,6 @@
     $qs('.js-acme-form-challenges').hidden = false;
   };
   steps[3].submit = function () {
-    // for now just show the next page immediately (its a spinner)
-    console.log("MAGIC STEP NUMBER is:", i);
-
     var chType;
     Array.prototype.some.call($qsa('.js-acme-challenge-type'), function ($el) {
       if ($el.checked) {
@@ -283,6 +281,7 @@
         });
       });
     });
+    console.log("INFO.challenges !!!!!", info.challenges);
 
     var results = [];
     function nextChallenge() {
@@ -294,6 +293,7 @@
       });
     }
 
+    // for now just show the next page immediately (its a spinner)
     steps[i]();
     return nextChallenge().then(function (results) {
       console.log('challenge status:', results);
@@ -366,6 +366,7 @@
 
     return p.then(function (_serverJwk) {
       serverJwk = _serverJwk;
+      info.serverJwk = serverJwk;
       // { serverJwk, domains }
       return BACME.orders.generateCsr({
         serverJwk: serverJwk
@@ -373,7 +374,7 @@
           return ident.value;
         })
       }).then(function (csrweb64) {
-        return BACME.order.finalize({
+        return BACME.orders.finalize({
           csr: csrweb64
         , jwk: info.jwk
         , finalizeUrl: info.finalizeUrl
@@ -384,7 +385,7 @@
           return new Promise(function (resolve) {
             setTimeout(resolve, 1000);
           }).then(function () {
-            return BACME.order.check({ orderUrl: info.orderUrl });
+            return BACME.orders.check({ orderUrl: info.orderUrl });
           }).then(function (reply) {
             if ('processing' === reply) {
               return checkCert();
@@ -395,10 +396,74 @@
 
         return checkCert();
       }).then(function (reply) {
-        return BACME.order.receive({ certificateUrl: reply.certificate });
+        return BACME.orders.receive({ certificateUrl: reply.certificate });
       }).then(function (certs) {
         console.log('WINNING!');
         console.log(certs);
+        $qs('.js-fullchain').value = certs;
+
+        // https://stackoverflow.com/questions/40314257/export-webcrypto-key-to-pem-format
+				function spkiToPEM(keydata){
+						var keydataS = arrayBufferToString(keydata);
+						var keydataB64 = window.btoa(keydataS);
+						var keydataB64Pem = formatAsPem(keydataB64);
+						return keydataB64Pem;
+				}
+
+				function arrayBufferToString( buffer ) {
+						var binary = '';
+						var bytes = new Uint8Array( buffer );
+						var len = bytes.byteLength;
+						for (var i = 0; i < len; i++) {
+								binary += String.fromCharCode( bytes[ i ] );
+						}
+						return binary;
+				}
+
+
+				function formatAsPem(str) {
+						var finalString = '-----BEGIN ' + pemName + ' PRIVATE KEY-----\n';
+
+						while(str.length > 0) {
+								finalString += str.substring(0, 64) + '\n';
+								str = str.substring(64);
+						}
+
+						finalString = finalString + '-----END ' + pemName + ' PRIVATE KEY-----';
+
+						return finalString;
+				}
+
+        var wcOpts;
+        var pemName;
+        if (/^R/.test(info.serverJwk.kty)) {
+          pemName = 'RSA';
+          wcOpts = {
+            name: "RSASSA-PKCS1-v1_5"
+          , hash: { name: "SHA-256" }
+          };
+        } else {
+          pemName = 'EC';
+          wcOpts = {
+            name: "ECDSA"
+          , namedCurve: "P-256"
+          }
+        }
+				return crypto.subtle.importKey(
+          "jwk"
+        , info.serverJwk
+        , wcOpts
+        , true
+        , ["sign"]
+				).then(function (privateKey) {
+				  return window.crypto.subtle.exportKey("pkcs8", privateKey);
+				}).then (function (keydata) {
+					var pem = spkiToPEM(keydata);
+					$qs('.js-privkey').value = pem;
+          steps[i]();
+				}).catch(function(err){
+					console.error(err);
+				});
       });
     });
   };

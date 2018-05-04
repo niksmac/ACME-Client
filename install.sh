@@ -10,5 +10,5 @@ popd
 
 mkdir -p js/browser-csr/v1.0.0-alpha/
 pushd js/browser-csr/v1.0.0-alpha/
-  wget -c https://git.coolaj86.com/coolaj86/browser-csr.js/raw/commit/c513a862a4e016794da800f0c2eec858b80837ab/csr.js
+  wget -c https://git.coolaj86.com/coolaj86/browser-csr.js/raw/commit/01cdc0e91b5bf03f12e1b25b4129e3cde927987c/csr.js
 popd

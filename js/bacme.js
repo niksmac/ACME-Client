@@ -129,13 +129,24 @@ var textEncoder = new TextEncoder();
 BACME._importKey = function (jwk) {
   var alg; // I think the 256 refers to the hash
   var wcOpts = {};
-  var extractable = false;
+  var extractable = true; // TODO make optionally false?
+  var priv = jwk;
+  var pub;
 
   // ECDSA
   if (/^EC/i.test(jwk.kty)) {
     wcOpts.name = 'ECDSA';
     wcOpts.namedCurve = jwk.crv;
     alg = 'ES256';
+    pub = {
+      crv: priv.crv
+    , kty: priv.kty
+    , x: priv.x
+    , y: priv.y
+    };
+    if (!priv.d) {
+      priv = null;
+    }
   }
 
   // RSA
@@ -143,28 +154,50 @@ BACME._importKey = function (jwk) {
     wcOpts.name = 'RSASSA-PKCS1-v1_5';
     wcOpts.hash = { name: "SHA-256" };
     alg = 'RS256';
+    pub = {
+      e: priv.e
+    , kty: priv.kty
+    , n: priv.n
+    }
+    if (!priv.p) {
+      priv = null;
+    }
   }
 
   return window.crypto.subtle.importKey(
     "jwk"
-  , jwk
+  , pub
 	, wcOpts
   , extractable
-  , [ "sign"/*, "verify"*/ ]
-  ).then(function (keypair) {
-    return {
-      wcKey: keypair
-    , meta: {
-        alg: alg
-      , name: wcOpts.name
-      , hash: wcOpts.hash
-      }
-    , jwk: jwk
-    };
+  , [ "verify" ]
+  ).then(function (publicKey) {
+    function give(privateKey) {
+      return {
+        wcPub: publicKey
+      , wcKey: privateKey
+      , wcKeypair: { publicKey: publicKey, privateKey: privateKey }
+      , meta: {
+          alg: alg
+        , name: wcOpts.name
+        , hash: wcOpts.hash
+        }
+      , jwk: jwk
+      };
+    }
+    if (!priv) {
+      return give();
+    }
+    return window.crypto.subtle.importKey(
+      "jwk"
+    , priv
+    , wcOpts
+    , extractable
+    , [ "sign"/*, "verify"*/ ]
+    ).then(give);
   });
 };
 BACME._sign = function (opts) {
-  var wcPrivKey = opts.abstractKey.wcKey;
+  var wcPrivKey = opts.abstractKey.wcKeypair.privateKey;
   var wcOpts = opts.abstractKey.meta;
   var alg = opts.abstractKey.meta.alg; // I think the 256 refers to the hash
   var signHash;
@@ -508,6 +541,7 @@ BACME.challenges.accept = function (opts) {
 		).then(function (resp) {
       BACME._logHeaders(resp);
 			nonce = resp.headers.get('replay-nonce');
+      console.log("ACCEPT NONCE:", nonce);
 
 			return resp.json().then(function (reply) {
         challengePollUrl = reply.url;
@@ -523,7 +557,6 @@ BACME.challenges.accept = function (opts) {
 BACME.challenges.check = function (opts) {
 	return window.fetch(opts.challengePollUrl, { mode: 'cors' }).then(function (resp) {
     BACME._logHeaders(resp);
-		nonce = resp.headers.get('replay-nonce');
 
 		return resp.json().then(function (reply) {
 			challengePollUrl = reply.url;
@@ -566,7 +599,7 @@ BACME.domains.generateKeypair = function () {
 // { serverJwk, domains }
 BACME.orders.generateCsr = function (opts) {
   return BACME._importKey(opts.serverJwk).then(function (abstractKey) {
-    return Promise.resolve(CSR.generate({ keypair: abstractKey.wcKey, domains: opts.domains }));
+    return Promise.resolve(CSR.generate({ keypair: abstractKey.wcKeypair, domains: opts.domains }));
   });
 };
 
@@ -621,7 +654,7 @@ BACME.orders.receive = function (opts) {
     BACME._logHeaders(resp);
     nonce = resp.headers.get('replay-nonce');
 
-    return resp.json().then(function (reply) {
+    return resp.text().then(function (reply) {
       BACME._logBody(reply);
 
       return reply;
