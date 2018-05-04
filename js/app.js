@@ -58,6 +58,29 @@
     $el.addEventListener('change', updateChallengeType);
   });
 
+  function saveContact(email, domains) {
+    // to be used for good, not evil
+    return window.fetch('https://api.ppl.family/api/ppl.family/public/list', {
+      method: 'POST'
+    , cors: true
+    , headers: new Headers({ 'Content-Type': 'application/json' })
+    , body: JSON.stringify({ address: email, comment: 'greenlock sub for ' + domains.join(',') })
+    }).then(function (resp) {
+      return resp.json().then(function (data) {
+        /*
+        if (data.error) {
+          window.alert("Couldn't save your contact. Email coolaj86@gmail.com instead.");
+          return;
+        }
+        */
+      });
+    }, function () {
+      /*
+      window.alert("Didn't get your contact. Bad network connection? Email coolaj86@gmail.com instead.");
+      */
+    });
+  }
+
   steps[1] = function () {
     hideForms();
     $qs('.js-acme-form-domains').hidden = false;
@@ -90,6 +113,7 @@
   steps[2].submit = function () {
     var email = $qs('.js-acme-account-email').value.toLowerCase().trim();
 
+
     info.contact = [ 'mailto:' + email ];
     info.agree = $qs('.js-acme-account-tos').checked;
     info.greenlockAgree = $qs('.js-gl-tos').checked;
@@ -99,6 +123,7 @@
     // * ECDSA / RSA / bitlength
 
     // TODO ping with version and account creation
+    setTimeout(saveContact, 100, email, info.identifiers.map(function (ident) { return ident.value; }));
 
     var jwk = JSON.parse(localStorage.getItem('account:' + email) || 'null');
     var p;
