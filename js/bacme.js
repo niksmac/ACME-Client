@@ -289,11 +289,10 @@ BACME.orders = {};
 BACME.orders.sign = function (opts) {
 	var payload64 = BACME._jsto64({ identifiers: opts.identifiers });
 
-	var protected64 = BACME._jsto64(
-		{ nonce: nonce, alg: 'ES256', url: orderUrl, kid: opts.kid }
-	);
-
 	return BACME._importKey(opts.jwk).then(function (abstractKey) {
+    var protected64 = BACME._jsto64(
+      { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: orderUrl, kid: opts.kid }
+    );
     console.log('abstractKey:');
     console.log(abstractKey);
     return BACME._sign({
@@ -378,7 +377,16 @@ BACME.challenges.view = function () {
 
       BACME._logBody(result);
 
-      return { token: challenge.token, url: challenge.url, domain: result.identifier.value, challenges: result.challenges };
+      return {
+        challenges: result.challenges
+      , expires: result.expires
+      , identifier: result.identifier
+      , status: result.status
+      , wildcard: result.wildcard
+      //, token: challenge.token
+      //, url: challenge.url
+      //, domain: result.identifier.value,
+      };
 		});
 	});
 };
@@ -420,12 +428,13 @@ BACME.thumbprint = function (opts) {
 	});
 };
 
-BACME.challenges['http-01'] = function () {
+// { token, thumbprint, challengeDomain }
+BACME.challenges['http-01'] = function (opts) {
 	// The contents of the key authorization file
-	keyAuth = token + '.' + thumbprint;
+	keyAuth = opts.token + '.' + opts.thumbprint;
 
 	// Where the key authorization file goes
-	httpPath = 'http://' + challengeDomain + '/.well-known/acme-challenge/' + token;
+	httpPath = 'http://' + opts.challengeDomain + '/.well-known/acme-challenge/' + opts.token;
 
   console.log("echo '" + keyAuth + "' > '" + httpPath + "'");
 
@@ -435,16 +444,17 @@ BACME.challenges['http-01'] = function () {
   };
 };
 
-BACME.challenges['dns-01'] = function () {
+// { keyAuth }
+BACME.challenges['dns-01'] = function (opts) {
 	return window.crypto.subtle.digest(
 		{ name: "SHA-256", }
-	, textEncoder.encode(keyAuth)
+	, textEncoder.encode(opts.keyAuth)
 	).then(function(hash){
 		dnsAuth = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
 			return String.fromCharCode(ch);
 		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 
-		dnsRecord = '_acme-challenge.' + challengeDomain;
+		dnsRecord = '_acme-challenge.' + opts.challengeDomain;
 
 		console.log('DNS TXT Auth:');
 		// The name of the record
@@ -462,55 +472,48 @@ BACME.challenges['dns-01'] = function () {
 
 var challengePollUrl;
 
-BACME.challenges.accept = function () {
+// { jwk, challengeUrl, accountId (kid) }
+BACME.challenges.accept = function (opts) {
   var payload64 = BACME._jsto64(
 		{}
 	);
 
-	var protected64 = BACME._jsto64(
-		{ nonce: nonce, alg: 'ES256', url: challengeUrl, kid: accountId }
-	);
-
 	nonce = null;
-	return window.crypto.subtle.sign(
-		{ name: "ECDSA", hash: { name: "SHA-256" } }
-	, accountKeypair.privateKey
-	, textEncoder.encode(protected64 + '.' + payload64)
-	).then(function (signature) {
-
-		var sig64 = btoa(Array.prototype.map.call(new Uint8Array(signature), function (ch) {
-			return String.fromCharCode(ch);
-		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-
-		var body = {
-			protected: protected64
-		, payload: payload64
-		, signature: sig64
-		};
+  return BACME._import(opts.jwk).then(function (abstractKey) {
+    var protected64 = BACME._jsto64(
+      { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: opts.challengeUrl, kid: opts.accountId }
+    );
+		return BACME._sign({
+      abstractKey: abstractKey
+    , payload64: payload64
+    , protected64: protected64
+    });
+  }).then(function (signedAccept) {
 
 		return window.fetch(
-			challengeUrl
+			opts.challengeUrl
 		, { mode: 'cors'
 			, method: 'POST'
 			, headers: { 'Content-Type': 'application/jose+json' }
-			, body: JSON.stringify(body)
+			, body: JSON.stringify(signedAccept)
 			}
 		).then(function (resp) {
       BACME._logHeaders(resp);
 			nonce = resp.headers.get('replay-nonce');
 
 			return resp.json().then(function (reply) {
-				challengePollUrl = reply.url;
+        challengePollUrl = reply.url;
 
 				console.log('Challenge ACK:');
 				console.log(JSON.stringify(reply));
+        return reply;
 			});
 		});
 	});
 };
 
-BACME.challenges.check = function () {
-	return window.fetch(challengePollUrl, { mode: 'cors' }).then(function (resp) {
+BACME.challenges.check = function (opts) {
+	return window.fetch(opts.challengePollUrl, { mode: 'cors' }).then(function (resp) {
     BACME._logHeaders(resp);
 		nonce = resp.headers.get('replay-nonce');
 
@@ -558,38 +561,30 @@ BACME.orders.generateCsr = function (keypair, domains) {
 
 var certificateUrl;
 
-BACME.orders.finalize = function () {
+// { csr, jwk, finalizeUrl, accountId }
+BACME.orders.finalize = function (opts) {
 	var payload64 = BACME._jsto64(
-		{ csr: csr }
-	);
-
-	var protected64 = BACME._jsto64(
-		{ nonce: nonce, alg: 'ES256', url: finalizeUrl, kid: accountId }
+		{ csr: opts.csr }
 	);
 
 	nonce = null;
-	return window.crypto.subtle.sign(
-		{ name: "ECDSA", hash: { name: "SHA-256" } }
-	, accountKeypair.privateKey
-	, textEncoder.encode(protected64 + '.' + payload64)
-	).then(function (signature) {
-
-		var sig64 = btoa(Array.prototype.map.call(new Uint8Array(signature), function (ch) {
-			return String.fromCharCode(ch);
-		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-
-		var body = {
-			protected: protected64
-		, payload: payload64
-		, signature: sig64
-		};
+  return BACME._import(opts.jwk).then(function (abstractKey) {
+    var protected64 = BACME._jsto64(
+      { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: opts.finalizeUrl, kid: opts.accountId }
+    );
+		return BACME._sign({
+      abstractKey: abstractKey
+    , payload64: payload64
+    , protected64: protected64
+    });
+  }).then(function (signedFinal) {
 
 		return window.fetch(
 			finalizeUrl
 		, { mode: 'cors'
 			, method: 'POST'
 			, headers: { 'Content-Type': 'application/jose+json' }
-			, body: JSON.stringify(body)
+			, body: JSON.stringify(signedFinal)
 			}
 		).then(function (resp) {
       BACME._logHeaders(resp);
@@ -598,6 +593,8 @@ BACME.orders.finalize = function () {
 			return resp.json().then(function (reply) {
 				certificateUrl = reply.certificate;
         BACME._logBody(reply);
+
+        return reply;
 			});
 		});
 	});

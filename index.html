@@ -25,10 +25,12 @@
 
     <!-- Step 3 Set Challanges -->
     <form class="js-acme-form js-acme-form-challenges">
+      <div class="js-acme-challenges">
+
       <label>How will you validate your domain?</label>
-      <label><input class="js-acme-challenge-type" type="radio" value="http-01" checked required>
+      <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
         File Upload to HTTP Web Server</label>
-      <label><input class="js-acme-challenge-type" type="radio" value="dns-01" required>
+      <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
         TXT Records on DNS Name Server</label>
 
       Verify Domains &amp; Sub-Domains:
@@ -66,11 +68,12 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
-      <div class="js-acme-wildcards">
+      <div class="js-acme-wildcard">
         Verify Wildcard Domains:
 
-        <table class="js-acme-table-wildcards">
+        <table class="js-acme-table-wildcard">
           <thead>
             <tr>
               <th>Hostname</th>

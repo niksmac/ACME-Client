@@ -18,12 +18,31 @@
     });
   }
 
+  function submitForm(ev) {
+    steps[i].submit(ev);
+    i += 1;
+  }
   $qsa('.js-acme-form').forEach(function ($el) {
     $el.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      steps[i].submit(ev);
-      i += 1;
+      submitForm(ev);
     });
+  });
+  function updateChallengeType() {
+    var input = this || $qs('.js-acme-challenge-type');
+    console.log('ch type radio:', input.value);
+    $qs('.js-acme-table-wildcard').hidden = true;
+    $qs('.js-acme-table-http-01').hidden = true;
+    $qs('.js-acme-table-dns-01').hidden = true;
+    if (info.challenges.wildcard) {
+      $qs('.js-acme-table-wildcard').hidden = false;
+    }
+    if (info.challenges[input.value]) {
+      $qs('.js-acme-table-' + input.value).hidden = false;
+    }
+  }
+  $qsa('.js-acme-challenge-type').forEach(function ($el) {
+    $el.addEventListener('change', updateChallengeType);
   });
 
   steps[1] = function () {
@@ -85,6 +104,7 @@
       console.log('account jwk:');
       console.log(jwk);
       delete jwk.key_ops;
+      info.jwk = jwk;
       return BACME.accounts.sign({
         jwk: jwk
       , contacts: [ 'mailto:' + email ]
@@ -117,6 +137,7 @@
 
       return p2.then(function (_kid) {
         kid = _kid;
+        info.kid = kid;
         return BACME.orders.sign({
           jwk: jwk
         , identifiers: info.identifiers
@@ -124,12 +145,95 @@
         }).then(function (signedOrder) {
           return BACME.orders.create({
             signedOrder: signedOrder
-          }).then(function (/*challengeIndexes*/) {
-            return BACME.challenges.all().then(function (challenges) {
-              console.log('challenges:');
-              console.log(challenges);
-              // TODO populate challenges in table
-              steps[i]();
+          }).then(function (order) {
+            info.finalizeUrl = order.finalize;
+            return BACME.thumbprint({ jwk: jwk }).then(function (thumbprint) {
+              return BACME.challenges.all().then(function (claims) {
+                console.log('claims:');
+                console.log(claims);
+                var obj = { 'dns-01': [], 'http-01': [], 'wildcard': [] };
+                var map = {
+                  'http-01': '.js-acme-table-http-01'
+                , 'dns-01': '.js-acme-table-dns-01'
+                , 'wildcard': '.js-acme-table-wildcard'
+                }
+                var tpls = {};
+                info.challenges = obj;
+                Object.keys(map).forEach(function (k) {
+                  var sel = map[k] + ' tbody';
+                  console.log(sel);
+                  tpls[k] = $qs(sel).innerHTML;
+                  $qs(map[k] + ' tbody').innerHTML = '';
+                });
+
+                // TODO make Promise-friendly
+                return Promise.all(claims.map(function (claim) {
+                  var hostname = claim.identifier.value;
+                  return Promise.all(claim.challenges.map(function (c) {
+                    var keyAuth = BACME.challenges['http-01']({
+                      token: c.token
+                    , thumbprint: thumbprint
+                    , challengeDomain: hostname
+                    });
+                    return BACME.challenges['dns-01']({
+                      keyAuth: keyAuth
+                    , challengeDomain: hostname
+                    }).then(function (dnsAuth) {
+                      var data = {
+                        type: c.type
+                      , hostname: hostname
+                      , url: c.url
+                      , token: c.token
+                      , keyAuthorization: keyAuth
+                      , httpPath: keyAuth.path
+                      , httpAuth: keyAuth.value
+                      , dnsType: dnsAuth.type
+                      , dnsHost: dnsAuth.host
+                      , dnsAnswer: dnsAuth.answer
+                      };
+
+                      obj[c.type].push(data);
+                      console.log('');
+                      console.log('CHALLENGE');
+                      console.log(claim);
+                      console.log(c);
+                      console.log(data);
+                      console.log('');
+
+                      if (claim.wildcard) {
+                        obj.wildcard.push(data);
+                        $qs(map.wildcard).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
+                      } else {
+                        obj[data.type].push(data);
+                        if ('dns-01' === data.type) {
+                          $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
+                        } else if ('http-01' === data.type) {
+                          $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.httpPath + '</td><td>' + data.httpAuth + '</td></tr>';
+                        } else {
+                          throw new Error('Unexpected type: ' + data.type);
+                        }
+                      }
+
+                    });
+
+                  }));
+                })).then(function () {
+
+                  // hide wildcard if no wildcard
+                  // hide http-01 and dns-01 if only wildcard
+                  if (!obj.wildcard.length) {
+                    $qs('.js-acme-wildcard').hidden = true;
+                  }
+                  if (!obj['http-01'].length) {
+                    $qs('.js-acme-challenges').hidden = true;
+                  }
+
+                  updateChallengeType();
+
+                  steps[i]();
+                });
+
+              });
             });
           });
         });
@@ -144,11 +248,72 @@
     hideForms();
     $qs('.js-acme-form-challenges').hidden = false;
   };
+  steps[3].submit = function () {
+    var chType = $qs('.js-acme-challenge-type').value;
+    var ps = [];
 
+    // do each wildcard, if any
+    // do each challenge, by selected type only
+    [ 'wildcard', chType].forEach(function (typ) {
+      info.challenges[typ].forEach(function (ch) {
+        // { jwk, challengeUrl, accountId (kid) }
+        ps.push(BACME.challenges.accept({
+          jwk: info.jwk
+        , challengeUrl: ch.url
+        , accountId: info.kid
+        }));
+      });
+    });
+
+    return Promise.all(ps).then(function (results) {
+      console.log('challenge status:', results);
+      var polls = results.slice(0);
+      var allsWell = true;
+
+      function checkPolls() {
+        return new Promise(function (resolve) {
+          setTimeout(resolve, 1000);
+        }).then(function () {
+          return Promise.all(polls.map(function (poll) {
+            return BACME.challenges.check({ challengePollUrl: poll.url });
+          })).then(function () {
+            polls = polls.filter(function (poll) {
+              //return 'valid' !== poll.status && 'invalid' !== poll.status;
+              if ('pending' === poll.status) {
+                return true;
+              }
+              if ('valid' !== poll.status) {
+                allsWell = false;
+                console.warn('BAD POLL STATUS', poll);
+              }
+              // TODO show status in HTML
+            });
+
+            if (polls.length) {
+              return checkPolls();
+            }
+            return true;
+          });
+        });
+      }
+
+      return checkPolls().then(function () {
+        if (allsWell) {
+          return submitForm();
+        }
+      });
+    });
+  };
+
+  // spinner
   steps[4] = function () {
     hideForms();
     $qs('.js-acme-form-poll').hidden = false;
   }
+  steps[4].submit = function () {
+    console.log('Congrats! Auto advancing...');
+    return BACME.order
+  };
 
   steps[5] = function () {
     hideForms();
