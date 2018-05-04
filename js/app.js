@@ -19,8 +19,9 @@
   }
 
   function submitForm(ev) {
-    steps[i].submit(ev);
+    var j = i;
     i += 1;
+    steps[j].submit(ev);
   }
   $qsa('.js-acme-form').forEach(function ($el) {
     $el.addEventListener('submit', function (ev) {
@@ -51,7 +52,12 @@
   };
   steps[1].submit = function () {
     info.identifiers = $qs('.js-acme-domains').value.split(/\s*,\s*/g).map(function (hostname) {
-      return { type: 'dns', value: hostname.trim() };
+      return { type: 'dns', value: hostname.toLowerCase().trim() };
+    });
+    info.identifiers.sort(function (a, b) {
+      if (a === b) { return 0; }
+      if (a < b) { return 1; }
+      if (a > b) { return -1; }
     });
 
     return BACME.directory($qs('.js-acme-directory-url').value).then(function (directory) {
@@ -59,6 +65,7 @@
       return BACME.nonce().then(function (_nonce) {
         nonce = _nonce;
 
+        console.log("MAGIC STEP NUMBER in 1 is:", i);
         steps[i]();
       });
     });
@@ -147,6 +154,7 @@
             signedOrder: signedOrder
           }).then(function (order) {
             info.finalizeUrl = order.finalize;
+            info.orderUrl = order.url; // from header Location ???
             return BACME.thumbprint({ jwk: jwk }).then(function (thumbprint) {
               return BACME.challenges.all().then(function (claims) {
                 console.log('claims:');
@@ -176,7 +184,7 @@
                     , challengeDomain: hostname
                     });
                     return BACME.challenges['dns-01']({
-                      keyAuth: keyAuth
+                      keyAuth: keyAuth.value
                     , challengeDomain: hostname
                     }).then(function (dnsAuth) {
                       var data = {
@@ -230,6 +238,7 @@
 
                   updateChallengeType();
 
+                  console.log("MAGIC STEP NUMBER in 2 is:", i);
                   steps[i]();
                 });
 
@@ -249,23 +258,44 @@
     $qs('.js-acme-form-challenges').hidden = false;
   };
   steps[3].submit = function () {
-    var chType = $qs('.js-acme-challenge-type').value;
-    var ps = [];
+    // for now just show the next page immediately (its a spinner)
+    console.log("MAGIC STEP NUMBER is:", i);
+
+    var chType;
+    Array.prototype.some.call($qsa('.js-acme-challenge-type'), function ($el) {
+      if ($el.checked) {
+        chType = $el.value;
+        return true;
+      }
+    });
+    console.log('chType is:', chType);
+    var chs = [];
 
     // do each wildcard, if any
     // do each challenge, by selected type only
     [ 'wildcard', chType].forEach(function (typ) {
       info.challenges[typ].forEach(function (ch) {
         // { jwk, challengeUrl, accountId (kid) }
-        ps.push(BACME.challenges.accept({
+        chs.push({
           jwk: info.jwk
         , challengeUrl: ch.url
         , accountId: info.kid
-        }));
+        });
       });
     });
 
-    return Promise.all(ps).then(function (results) {
+    var results = [];
+    function nextChallenge() {
+      var ch = chs.pop();
+      if (!ch) { return results; }
+      return BACME.challenges.accept(ch).then(function (result) {
+        results.push(result);
+        return nextChallenge();
+      });
+    }
+
+    steps[i]();
+    return nextChallenge().then(function (results) {
       console.log('challenge status:', results);
       var polls = results.slice(0);
       var allsWell = true;
@@ -276,7 +306,9 @@
         }).then(function () {
           return Promise.all(polls.map(function (poll) {
             return BACME.challenges.check({ challengePollUrl: poll.url });
-          })).then(function () {
+          })).then(function (polls) {
+            console.log(polls);
+
             polls = polls.filter(function (poll) {
               //return 'valid' !== poll.status && 'invalid' !== poll.status;
               if ('pending' === poll.status) {
@@ -312,7 +344,63 @@
   }
   steps[4].submit = function () {
     console.log('Congrats! Auto advancing...');
-    return BACME.order
+    var key = info.identifiers.map(function (ident) { return ident.value; }).join(',');
+    var serverJwk = JSON.parse(localStorage.getItem('server:' + key) || 'null');
+    var p;
+
+    function createKeypair() {
+      return BACME.accounts.generateKeypair({
+        type: 'ECDSA'
+      , bitlength: '256'
+      }).then(function (serverJwk) {
+        localStorage.setItem('server:' + key, JSON.stringify(serverJwk));
+        return serverJwk;
+      })
+    }
+
+    if (serverJwk) {
+      p = Promise.resolve(serverJwk);
+    } else {
+      p = createKeypair();
+    }
+
+    return p.then(function (_serverJwk) {
+      serverJwk = _serverJwk;
+      // { serverJwk, domains }
+      return BACME.orders.generateCsr({
+        serverJwk: serverJwk
+      , domains: info.identifiers.map(function (ident) {
+          return ident.value;
+        })
+      }).then(function (csrweb64) {
+        return BACME.order.finalize({
+          csr: csrweb64
+        , jwk: info.jwk
+        , finalizeUrl: info.finalizeUrl
+        , accountId: info.kid
+        });
+      }).then(function () {
+        function checkCert() {
+          return new Promise(function (resolve) {
+            setTimeout(resolve, 1000);
+          }).then(function () {
+            return BACME.order.check({ orderUrl: info.orderUrl });
+          }).then(function (reply) {
+            if ('processing' === reply) {
+              return checkCert();
+            }
+            return reply;
+          });
+        }
+
+        return checkCert();
+      }).then(function (reply) {
+        return BACME.order.receive({ certificateUrl: reply.certificate });
+      }).then(function (certs) {
+        console.log('WINNING!');
+        console.log(certs);
+      });
+    });
   };
 
   steps[5] = function () {

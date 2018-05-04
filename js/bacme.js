@@ -102,6 +102,8 @@ BACME.accounts.generateKeypair = function (opts) {
 			console.log('private jwk:');
 			console.log(JSON.stringify(privJwk, null, 2));
 
+      return privJwk;
+      /*
 			return webCrypto.subtle.exportKey(
 				"pkcs8"
 			, result.privateKey
@@ -112,6 +114,7 @@ BACME.accounts.generateKeypair = function (opts) {
         return privJwk;
         //return accountKeypair;
 			});
+      */
 		})
 	});
 };
@@ -335,6 +338,7 @@ BACME.orders.create = function (opts) {
 			finalizeUrl = result.finalize;
       BACME._logBody(result);
 
+      result.url = currentOrderUrl;
       return result;
 		});
 	});
@@ -404,9 +408,9 @@ BACME.thumbprint = function (opts) {
   var keys;
 
   if (/^EC/i.test(opts.jwk.kty)) {
-    keys = [ 'e', 'kty', 'n' ];
-  } else if (/^RS/i.test(opts.jwk.kty)) {
     keys = [ 'crv', 'kty', 'x', 'y' ];
+  } else if (/^RS/i.test(opts.jwk.kty)) {
+    keys = [ 'e', 'kty', 'n' ];
   }
 
 	var accountPublicStr = '{' + keys.map(function (key) {
@@ -416,12 +420,14 @@ BACME.thumbprint = function (opts) {
 	return window.crypto.subtle.digest(
 		{ name: "SHA-256" } // SHA-256 is spec'd, non-optional
 	, textEncoder.encode(accountPublicStr)
-	).then(function(hash){
+	).then(function (hash) {
 		thumbprint = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
 			return String.fromCharCode(ch);
 		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 
 		console.log('Thumbprint:');
+		console.log(opts);
+		console.log(accountPublicStr);
 		console.log(thumbprint);
 
     return thumbprint;
@@ -446,10 +452,12 @@ BACME.challenges['http-01'] = function (opts) {
 
 // { keyAuth }
 BACME.challenges['dns-01'] = function (opts) {
+  console.log('opts.keyAuth for DNS:');
+  console.log(opts.keyAuth);
 	return window.crypto.subtle.digest(
 		{ name: "SHA-256", }
 	, textEncoder.encode(opts.keyAuth)
-	).then(function(hash){
+	).then(function (hash) {
 		dnsAuth = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
 			return String.fromCharCode(ch);
 		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -478,8 +486,7 @@ BACME.challenges.accept = function (opts) {
 		{}
 	);
 
-	nonce = null;
-  return BACME._import(opts.jwk).then(function (abstractKey) {
+  return BACME._importKey(opts.jwk).then(function (abstractKey) {
     var protected64 = BACME._jsto64(
       { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: opts.challengeUrl, kid: opts.accountId }
     );
@@ -490,6 +497,7 @@ BACME.challenges.accept = function (opts) {
     });
   }).then(function (signedAccept) {
 
+	  nonce = null;
 		return window.fetch(
 			opts.challengeUrl
 		, { mode: 'cors'
@@ -555,8 +563,11 @@ BACME.domains.generateKeypair = function () {
 	});
 };
 
-BACME.orders.generateCsr = function (keypair, domains) {
-  return Promise.resolve(CSR.generate(keypair, domains));
+// { serverJwk, domains }
+BACME.orders.generateCsr = function (opts) {
+  return BACME._importKey(opts.serverJwk).then(function (abstractKey) {
+    return Promise.resolve(CSR.generate({ keypair: abstractKey.wcKey, domains: opts.domains }));
+  });
 };
 
 var certificateUrl;
@@ -567,8 +578,7 @@ BACME.orders.finalize = function (opts) {
 		{ csr: opts.csr }
 	);
 
-	nonce = null;
-  return BACME._import(opts.jwk).then(function (abstractKey) {
+  return BACME._importKey(opts.jwk).then(function (abstractKey) {
     var protected64 = BACME._jsto64(
       { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: opts.finalizeUrl, kid: opts.accountId }
     );
@@ -579,8 +589,9 @@ BACME.orders.finalize = function (opts) {
     });
   }).then(function (signedFinal) {
 
+	  nonce = null;
 		return window.fetch(
-			finalizeUrl
+			opts.finalizeUrl
 		, { mode: 'cors'
 			, method: 'POST'
 			, headers: { 'Content-Type': 'application/jose+json' }
@@ -598,6 +609,41 @@ BACME.orders.finalize = function (opts) {
 			});
 		});
 	});
+};
+
+BACME.orders.receive = function (opts) {
+  return window.fetch(
+    opts.certificateUrl
+  , { mode: 'cors'
+    , method: 'GET'
+    }
+  ).then(function (resp) {
+    BACME._logHeaders(resp);
+    nonce = resp.headers.get('replay-nonce');
+
+    return resp.json().then(function (reply) {
+      BACME._logBody(reply);
+
+      return reply;
+    });
+  });
+};
+
+BACME.orders.check = function (opts) {
+  return window.fetch(
+    opts.orderUrl
+  , { mode: 'cors'
+    , method: 'GET'
+    }
+  ).then(function (resp) {
+    BACME._logHeaders(resp);
+
+    return resp.json().then(function (reply) {
+      BACME._logBody(reply);
+
+      return reply;
+    });
+  });
 };
 
 }(window));
