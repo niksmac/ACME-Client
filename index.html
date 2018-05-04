@@ -122,11 +122,31 @@
 
     <!-- Step 5 Get Certs -->
     <form class="js-acme-form js-acme-form-download">
-      <label>privkey.pem</label>
+      <div>
+      <h3><label>privkey.pem</label></h3>
       <textarea class="js-privkey">-</textarea>
+      </div>
 
-      <label>fullchain.pem</label>
+      <div>
+      <h3><label>fullchain.pem</label></h3>
       <textarea class="js-fullchain">-</textarea>
+      </div>
+
+      <div>
+      <h3>node.js https server example</h3>
+      <pre><code>'use strict';
+
+var https = require('https');
+var server = https.createServer({
+  key: require('fs').readFileSync('./privkey.pem')
+, cert: require('fs').readFileSync('./fullchain.pem')
+}, function (req, res) {
+  res.end("Hello, World!");
+}).listen(443, function () {
+  console.log('Listening on', this.address());
+})
+</code></pre>
+      </div>
 
       <!--
         TODO
@@ -135,13 +155,13 @@
 
       <label>chain.pem</label>
       <textarea class="js-chain">-</textarea>
-      -->
 
       <button type="button">Download SSL Certificates</button>
-
+      <br>
       <a href="#">Advanced (copy and paste)</a>
-
+      <br>
       <button type="submit">Start Over</button>
+      -->
     </form>
 
     <input class="js-acme-directory-url" type="url" placeholder="ACME directory url">
