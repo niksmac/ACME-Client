@@ -509,4 +509,6 @@
   }
 
   steps[1]();
+
+  $qs('body').hidden = false;
 }());
