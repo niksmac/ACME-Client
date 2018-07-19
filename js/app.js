@@ -247,14 +247,13 @@
                       if (claim.wildcard) {
                         obj.wildcard.push(data);
                         $qs(map.wildcard).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
-                      } else {
+                      } else if(obj[data.type]) {
+
                         obj[data.type].push(data);
                         if ('dns-01' === data.type) {
                           $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
                         } else if ('http-01' === data.type) {
                           $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.httpPath + '</td><td>' + data.httpAuth + '</td></tr>';
-                        } else {
-                          throw new Error('Unexpected type: ' + data.type);
                         }
                       }
 
@@ -379,6 +378,7 @@
   }
   steps[4].submit = function () {
     console.log('Congrats! Auto advancing...');
+
     var key = info.identifiers.map(function (ident) { return ident.value; }).join(',');
     var serverJwk = JSON.parse(localStorage.getItem('server:' + key) || 'null');
     var p;
