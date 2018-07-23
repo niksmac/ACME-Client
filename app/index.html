@@ -1,0 +1,237 @@
+<html>
+  <head>
+    <title>Greenlock&trade;</title>
+    <meta property="og:image" content="https://greenlock.ppl.family/img/greenlock-mark-400x400.png" />
+    <link href="style/main.css" rel="stylesheet">
+  </head>
+  <body hidden>
+    <div class="column-container wide">
+      <div class="column-row">
+        <img src="img/greenlock-146.png">
+      </div>
+      <div class="column-row">
+          <h1>Get the green lock for your website</h1>
+
+        <!-- Step 1 Choose Domain(s) -->
+        <form class="js-acme-form js-acme-form-domains">
+          <h1><label>What's your domain?</label></h1>
+          <h4>Certificates are valid for 90 days. Renewal is free :)</h4>
+          <input class="js-acme-domains" type="text" placeholder="example.com,*.example.com" required>
+          <br>
+          <button type="submit">Next</button>
+
+          <br>
+          <br>
+          <br>
+          <label><input class="js-acme-api-type" name="acme-api-type" type="radio" value="v02" checked required>
+            Production</label>
+          <label><input class="js-acme-api-type" name="acme-api-type" type="radio" value="staging-v02" required>
+            Testing</label>
+          <br>
+          <input class="js-acme-directory-url" type="url" placeholder="ACME directory url">
+        </form>
+
+        <!-- Step 2 Create Account -->
+        <form class="js-acme-form js-acme-form-account">
+          <h1><label>What's your email?</label></h1>
+          <input class="js-acme-account-email" type="email" placeholder="john@doe.family" required>
+          <br>
+          <br>
+          <label><input class="js-acme-account-tos" type="checkbox" required>
+            Agree to <a class="js-acme-tos-url" target="acme-tos">Let's Encrypt&trade; Terms of Service</a>?</label>
+          <br>
+          <br>
+          <label><input class="js-greenlock-account-tos" type="checkbox" required>
+            Agree to <a class="js-gl-tos" target="_blank" href="./legal.html">Greenlock&trade; Terms of Service</a>?</label>
+          <br>
+          <br>
+          <!--
+          <a href="#">advanced (use existing account)</a>
+          <br>
+          <br>
+          -->
+          <button type="submit">Next</button>
+        </form>
+
+        <!-- Step 3 Set Challanges -->
+        <form class="js-acme-form js-acme-form-challenges">
+
+          <h1>How will you validate your domain?</h1>
+          <br>
+          <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
+            File Upload to HTTP Web Server</label>
+          <br>
+          <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
+            TXT Records on DNS Name Server</label>
+          <br>
+
+          <div class="js-acme-challenges">
+
+          <h2>Verify Domains &amp; Sub-Domains</h2>
+
+          <table class="js-acme-table-http-01">
+            <thead>
+              <tr>
+                <th>Hostname</th>
+                <th>File Location</th>
+                <th>File Contents</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>example.com</td>
+                <td>.well-known/acme-challenge/xxx</td>
+                <td>sec.ret</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table class="js-acme-table-dns-01">
+            <thead>
+              <tr>
+                <th>Hostname</th>
+                <th>TXT Host</th>
+                <th>TXT Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>example.com</td>
+                <td>_acme-challenge.example.com</td>
+                <td>4A54</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+
+          <div class="js-acme-wildcard">
+            <h2>Verify Wildcard Domains</h2>
+
+            <table class="js-acme-table-wildcard">
+              <thead>
+                <tr>
+                  <th>Hostname</th>
+                  <th>TXT Host</th>
+                  <th>TXT Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>example.com</td>
+                  <td>_acme-challenge.example.com</td>
+                  <td>4A54</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <button type="submit">Next</button>
+        </form>
+
+        <!-- Step 4 Process Challanges -->
+        <form class="js-acme-form js-acme-form-poll">
+          Verifying Domains... (give us 5 seconds or so...)
+
+          <!--
+          <table class="js-acme-table-verifying">
+            <thead>
+              <tr>
+                <th>Hostname</th>
+                <th>Type</th>
+                <th>Pass</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>example.com</td>
+                <td>http-01</td>
+                <td>-</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <a href="#">advanced (use existing keypair for domain)</a>
+
+          <button type="submit">Next</button>
+          -->
+        </form>
+
+        <!-- Step 5 Get Certs -->
+        <form class="js-acme-form js-acme-form-download">
+          <div>
+          <h2><label>privkey.pem</label></h2>
+          <textarea cols="80" rows="10" class="js-privkey">-</textarea>
+          </div>
+
+          <div>
+          <h2><label>fullchain.pem</label></h2>
+          <textarea cols="80" rows="60" class="js-fullchain">-</textarea>
+          </div>
+
+          <div>
+          <h3>node.js https server example</h3>
+          <pre><code>'use strict';
+
+    var https = require('https');
+    var server = https.createServer({
+      key: require('fs').readFileSync('./privkey.pem')
+    , cert: require('fs').readFileSync('./fullchain.pem')
+    }, function (req, res) {
+      res.end("Hello, World!");
+    }).listen(443, function () {
+      console.log('Listening on', this.address());
+    })
+    </code></pre>
+          </div>
+
+          <!--
+            TODO
+          <label>cert.pem</label>
+          <textarea class="js-cert">-</textarea>
+
+          <label>chain.pem</label>
+          <textarea class="js-chain">-</textarea>
+
+          <button type="button">Download SSL Certificates</button>
+          <br>
+          <a href="#">Advanced (copy and paste)</a>
+          <br>
+          <button type="submit">Start Over</button>
+          -->
+        </form>
+
+          <br>
+          <br>
+          <br>
+          <div><small>
+          <h3></h3>
+          <a href="https://git.coolaj86.com/coolaj86/greenlock.html">View Source</a> (git)
+          <!-- or
+          <pre><code>git clone https://git.coolaj86.com/coolaj86/greenlock.html.git</code></pre>
+          Or view the live site code (same as live-site branch):
+          <pre><code>wget https://greenlock.ppl.family --mirror --convert-links --adjust-extension --page-requisites --no-parent</code></pre>
+          -->
+          </small></div>
+
+        <script src="./js/bacme.js"></script>
+        <script src="./js/app.js"></script>
+
+        <script src="./js/pkijs.org/v1.3.33/common.js"></script>
+        <script src="./js/pkijs.org/v1.3.33/asn1.js"></script>
+        <script src="./js/pkijs.org/v1.3.33/x509_schema.js"></script>
+        <script src="./js/pkijs.org/v1.3.33/x509_simpl.js"></script>
+        <script src="./js/browser-csr/v1.0.0-alpha/csr.js"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-118745161-2"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-118745161-2');
+        </script>
+      </div>
+    </div>
+  </body>
+</html>
