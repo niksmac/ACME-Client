@@ -11,6 +11,7 @@
 
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
   function updateApiType() {
+    console.log("type updated");
     var input = this || Array.prototype.filter.call(
       $qsa('.js-acme-api-type'), function ($el) { return $el.checked; }
     )[0];
@@ -507,8 +508,22 @@
     hideForms();
     $qs('.js-acme-form-download').hidden = false;
   }
-
   steps[1]();
+
+  var params = new URLSearchParams(window.location.search);
+  var apiType = params.get('acme-api-type') || "staging-v02";
+
+  if(params.has('acme-domains')) {
+    console.log("acme-domains param: ", params.get('acme-domains'));
+    $qs('.js-acme-domains').value = params.get('acme-domains');     
+
+    $qsa('.js-acme-api-type').forEach(function(ele) {
+      if(ele.value === apiType) {
+        ele.checked = true;
+      }
+    });
+    submitForm();
+  }
 
   $qs('body').hidden = false;
 }());
