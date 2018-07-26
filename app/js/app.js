@@ -522,6 +522,7 @@
         ele.checked = true;
       }
     });
+    steps[2]();
     submitForm();
   }
 
