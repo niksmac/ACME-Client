@@ -45,7 +45,9 @@
         <h1>Get the green lock for your website</h1>
       </div>
       <div class="column-row">
-        <!-- Step 1 Choose Domain(s) -->
+        <div class="js-javascript-warning">
+          Greenlock will process the CSR in the browser and request the certificates directly from letsencrypt.org.  Please enable Javascript before continuing.
+        </div>
         <form id="js-acme-form" action="./app/" method=>
           <div class="domain-psuedo-input">
             <span class="secure-green">Secure</span> | <span class="secure-green">https:</span>//<input aria-label="domains to secure" id="acme-domains" type="text" name="acme-domains" placeholder="Your domain name" required>
