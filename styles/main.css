@@ -103,3 +103,13 @@ body.js-app-ready {
 .acme-advanced-fields > * {
   margin: 0 0.5em;
 }
+
+.js-javascript-warning {
+  border: solid 1px red;
+  background-color: #ffc0cb40;
+  border-radius: 2px;
+  margin: 0.6em;
+  padding: 0.5em 1em;
+  width: 30em;
+ }
+ 

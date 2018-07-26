@@ -4,6 +4,8 @@
   var $qs = function (s) { return window.document.querySelector(s); };
   var $qsa = function (s) { return window.document.querySelectorAll(s); };
 
+  $qs('.js-javascript-warning').hidden = true;
+
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
   function updateApiType() {
     var formData = new FormData($qs("#js-acme-form"));
