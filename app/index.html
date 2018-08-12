@@ -2,17 +2,81 @@
   <head>
     <title>Greenlock&trade;</title>
     <meta property="og:image" content="https://greenlock.ppl.family/img/greenlock-mark-400x400.png" />
-    <link href="style/main.css" rel="stylesheet">
+    <style>
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-display: block;
+        font-weight: 400;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 700;
+        font-display: block;
+        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+    </style>
+
+    <link href="styles/main.css" rel="stylesheet">
+    
   </head>
   <body hidden>
+    <!-- let's define our SVG that we will reuse -->
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" viewBox="0 0 24 24">
+      <defs>
+        <g id="svg-check">
+          <path fill="none" d="M0 0h24v24H0z"/>
+          <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+        </g>
+      </defs>
+    </svg>
     <div class="column-container wide">
       <div class="column-row">
-        <img src="../img/greenlock-820x150.png">
+        <div id="js-progress-bar" class="progress-bar">
+          <div class="progress-bar-step">
+            <div class="circle">
+              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-check"></use>
+              </svg>
+            </div>
+            <div class="progress-step-label"><div>Details</div></div>
+          </div>
+          <div class="progress-bar-step">
+            <div class="circle">
+              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-check"></use>
+              </svg>
+            </div>
+            <div class="progress-step-label"><div>Verify domain</div></div>
+          </div>
+          <div class="progress-bar-step">
+            <div class="circle">
+              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-check"></use>
+              </svg>
+            </div>
+            <div class="progress-step-label"><div>Install certificates</div></div>
+          </div>
+          <!-- hide until the steps are all updated
+          <div class="progress-bar-step">
+            <div class="circle">
+              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-check"></use>
+              </svg>
+            </div>
+            <div class="progress-step-label"><div>Done</div></div>
+          </div>
+          -->
+        </div>
+        <div class="greenlock-logo-badge"><img src="./img/greenlock-mark-400x400.png"></div>
+        <div class="greenlock-name">Greenlock</div>
       </div>
       <div class="column-row">
-          <h1>Get the green lock for your website</h1>
-
-        <!-- Step 1 Choose Domain(s) -->
         <form class="js-acme-form js-acme-form-domains">
           <h1><label>What's your domain?</label></h1>
           <h4>Certificates are valid for 90 days. Renewal is free :)</h4>
@@ -159,18 +223,18 @@
         <!-- Step 5 Get Certs -->
         <form class="js-acme-form js-acme-form-download">
           <div>
-          <h2><label>privkey.pem</label></h2>
-          <textarea cols="80" rows="10" class="js-privkey">-</textarea>
-          </div>
+            <h2><label>privkey.pem</label></h2>
+            <textarea cols="80" rows="10" class="js-privkey">-</textarea>
+            </div>
 
-          <div>
-          <h2><label>fullchain.pem</label></h2>
-          <textarea cols="80" rows="60" class="js-fullchain">-</textarea>
-          </div>
+            <div>
+            <h2><label>fullchain.pem</label></h2>
+            <textarea cols="80" rows="60" class="js-fullchain">-</textarea>
+            </div>
 
-          <div>
-          <h3>node.js https server example</h3>
-          <pre><code>'use strict';
+            <div>
+            <h3>node.js https server example</h3>
+            <pre><code>'use strict';
 
     var https = require('https');
     var server = https.createServer({
@@ -181,7 +245,7 @@
     }).listen(443, function () {
       console.log('Listening on', this.address());
     })
-    </code></pre>
+            </code></pre>
           </div>
 
           <!--

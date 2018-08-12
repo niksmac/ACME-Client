@@ -29,9 +29,26 @@
     });
   }
 
+  function updateProgress(currentStep) {
+    var progressSteps = $qs("#js-progress-bar").children;
+    for(var j = 0; j < progressSteps.length; j++) {
+      if(j < currentStep) {
+        progressSteps[j].classList.add("js-progress-step-complete");
+        progressSteps[j].classList.remove("js-progress-step-started");
+      } else if(j === currentStep) {
+        progressSteps[j].classList.remove("js-progress-step-complete");
+        progressSteps[j].classList.add("js-progress-step-started");
+      } else {
+        progressSteps[j].classList.remove("js-progress-step-complete");
+        progressSteps[j].classList.remove("js-progress-step-started");
+      }
+    };
+  }
+
   function submitForm(ev) {
     var j = i;
     i += 1;
+    
     steps[j].submit(ev);
   }
   $qsa('.js-acme-form').forEach(function ($el) {
@@ -83,6 +100,7 @@
   }
 
   steps[1] = function () {
+    updateProgress(0);
     hideForms();
     $qs('.js-acme-form-domains').hidden = false;
   };
@@ -108,12 +126,12 @@
   };
 
   steps[2] = function () {
+    updateProgress(0);
     hideForms();
     $qs('.js-acme-form-account').hidden = false;
   };
   steps[2].submit = function () {
     var email = $qs('.js-acme-account-email').value.toLowerCase().trim();
-
 
     info.contact = [ 'mailto:' + email ];
     info.agree = $qs('.js-acme-account-tos').checked;
@@ -290,6 +308,7 @@
   };
 
   steps[3] = function () {
+    updateProgress(1);
     hideForms();
     $qs('.js-acme-form-challenges').hidden = false;
   };
@@ -374,6 +393,7 @@
 
   // spinner
   steps[4] = function () {
+    updateProgress(1);
     hideForms();
     $qs('.js-acme-form-poll').hidden = false;
   }
@@ -505,6 +525,7 @@
   };
 
   steps[5] = function () {
+    updateProgress(2)
     hideForms();
     $qs('.js-acme-form-download').hidden = false;
   }

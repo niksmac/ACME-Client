@@ -1,0 +1,90 @@
+.column-row {
+  width: 22.222222em;
+}
+
+.column-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.progress-bar {
+  height: 0;
+  border: solid 1px #5bc17f;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 22em;
+  margin: 1.388888889em auto;
+}
+
+.greenlock-logo-badge > img {
+  width: 100%;
+}
+
+.greenlock-logo-badge {
+  display: inline-block;
+  border: solid 1px #d9d9d9;
+  border-radius: 500px;
+  width: 5.333333333em;
+  height: 5.333333333em;
+  margin-top: 4.277777778em;
+}
+
+.column-row {
+  text-align: center;
+}
+
+.progress-bar-step {position: relative;margin: -0.722222222em -0.166666667em;display: inline-block;background-color: white;/* border-radius: 100%; */padding: 0 0.111111em;}
+
+.progress-bar-step > .circle {
+  content: "";
+  display: inline-block;
+  border: solid 0.111111111em #5bc17f;
+  width: 0.888888889em;
+  height: 0.888888889em;
+  border-radius: 100%;
+  background: white;
+}
+
+.progress-step-label {
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  =: block
+  font-size:;
+  top: 139%;
+  font-size: 0.722222222em;
+  white-space: nowrap;
+}
+
+.progress-step-label > div {
+  position: relative;
+  right: 50%;
+}
+
+body {
+  font-size: 18px;
+  font-family: Source Sans Pro, sans-serif;
+  margin: 0;
+  line-height: 1.33;
+}
+
+.greenlock-name {
+  color: #808080;
+}
+
+.js-progress-step-complete > .circle, .js-progress-step-started > .circle {
+    background-color: #5bc17f;
+}
+
+.progress-bar-step.js-progress-step-complete svg {
+    fill: white;
+    /* stroke: none; */
+    display: initial;
+}
+
+svg {
+}
+
+.js-progress-step-complete > .circle {}
