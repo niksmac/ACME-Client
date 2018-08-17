@@ -33,6 +33,14 @@
           <path fill="none" d="M0 0h24v24H0z"/>
           <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
         </g>
+        <g id="svg-checked">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </g>
+        <g id="svg-unchecked">
+          <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+          <path d="M0 0h24v24H0z" fill="none"/>
+        </g>
       </defs>
     </svg>
     <div class="column-container wide">
@@ -98,37 +106,58 @@
         <!-- Step 2 Create Account -->
         <form class="js-acme-form js-acme-form-account">
           <h1><label>What's your email?</label></h1>
-          <input class="js-acme-account-email" type="email" placeholder="john@doe.family" required>
-          <br>
-          <br>
-          <label><input class="js-acme-account-tos" type="checkbox" required>
-            Agree to <a class="js-acme-tos-url" target="acme-tos">Let's Encrypt&trade; Terms of Service</a>?</label>
-          <br>
-          <br>
-          <label><input class="js-greenlock-account-tos" type="checkbox" required>
-            Agree to <a class="js-gl-tos" target="_blank" href="./legal.html">Greenlock&trade; Terms of Service</a>?</label>
-          <br>
-          <br>
+          <input class="js-acme-account-email acme-account-email" type="email" placeholder="john@doe.family" required>
+          <div class="checkbox-array">
+            <label>
+              <input class="js-acme-account-tos" type="checkbox" required>
+              <svg class="icon-checked-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-checked"></use>
+              </svg>
+              <svg class="icon-unchecked-box"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-unchecked"></use>
+              </svg>
+              Agree to &nbsp<a class="js-acme-tos-url" target="acme-tos">Let's Encrypt&trade; Terms of Service</a>?
+            </label>
+            <label>
+              <input class="js-greenlock-account-tos" type="checkbox" required>
+              <svg class="icon-checked-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-checked"></use>
+              </svg>
+              <svg class="icon-unchecked-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-unchecked"></use>
+              </svg>
+              Agree to &nbsp<a class="js-gl-tos" target="_blank" href="./legal.html">Greenlock&trade; Terms of Service</a>?
+            </label>
+          </div>
           <!--
           <a href="#">advanced (use existing account)</a>
           <br>
           <br>
           -->
-          <button type="submit">Next</button>
+          <button class="button-next" type="submit">Next</button>
+          <div class="email-usage">
+            Why do we need your email? We link your SSL certificates to the
+            email you use so you can manage your certificates in the future,
+            and get important email updates about them.
+          </div>
         </form>
 
         <!-- Step 3 Set Challanges -->
         <form class="js-acme-form js-acme-form-challenges">
 
-          <h1>How will you validate your domain?</h1>
-          <br>
-          <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
-            File Upload to HTTP Web Server</label>
-          <br>
-          <label><input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
-            TXT Records on DNS Name Server</label>
-          <br>
-
+          <h1>Let's verify your domain</h1>
+          <div class="tabbed-selector">
+            <label>
+              <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
+              File Upload
+              <div></div>
+            </label>
+            <label>
+              <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
+              DNS Record
+              <div></div>
+            </label>
+          </div>
           <div class="js-acme-challenges">
 
           <h2>Verify Domains &amp; Sub-Domains</h2>
