@@ -11,6 +11,7 @@
 .progress-bar {
   height: 0;
   border: solid 1px #5bc17f;
+  background-color: #5bc17f;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,7 +32,7 @@
   margin-top: 4.277777778em;
 }
 
-.column-row {
+.header-row {
   text-align: center;
 }
 
@@ -97,12 +98,13 @@ input[type=email], input[type=text] {
     font-size: 1em;
     padding: 0.444444444em 0.888889em;
     width: 100%;
+    border: solid 1px #d9d9d9;
+    border-radius: 2px;
 }
 
 .checkbox-array {
     display: flex;
     flex-direction: column;
-    align-items: start;
     padding: 1em 0;
 }
 
@@ -135,7 +137,6 @@ input[type=email], input[type=text] {
 
 .checkbox-array label {
     display: flex;
-    align-items: center;
     height: 1.333333333em;
     font-size: 0.833333333em;
     margin: 0.4em 0;
@@ -147,7 +148,6 @@ a {
 
 .email-usage {
     color: #666666;
-    text-align: start;
     font-size: 0.833333333em;
     margin: 2em 0;
 }
@@ -170,6 +170,7 @@ a {
 .tabbed-selector {
     display: flex;
     font-weight: bold;
+    text-align: center;
 }
 
 .tabbed-selector input[type=radio] {
@@ -178,4 +179,59 @@ a {
 
 table.js-acme-table-http-01, table.js-acme-table-dns-01 {
     margin-left: -14em;
+}
+
+.download-ver-file svg {
+    fill: #5bc17f;
+    width: 1.333333333em;
+}
+
+.download-ver-file a {
+    color: #5bc17f;
+}
+
+.download-ver-file {
+}
+
+.mdicon {
+    position: relative;
+    top: 0.4em;
+}
+
+.http-verification-info {
+    background:  #f7f7f7;
+    position: relative;
+    font-size: 0.833333333em;
+    padding: 1.6em 6.933333333em 1.6em 1.6em;
+    word-break: break-all;
+    text-align: start;
+}
+
+.file-ver-corner-fold {
+    position: absolute;
+    width: 2em;
+    height: 2em;
+    border-left: solid #d9d9d9 1px;
+    border-bottom: solid #d9d9d9 1px;
+    right: 0;
+    top: 0;
+    background: linear-gradient(45deg, #f7f7f7 0%,#f7f7f7 50%,#ffffff 50%,#ffffff 100%);
+}
+
+.file-ver-info-header {
+    color: #808080;
+}
+
+.http-verification-info hr {
+    border: none;
+    border-bottom: solid 1px #d9d9d9;
+}
+
+.acme-ver-uri {
+    word-break: break-all;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
 }
