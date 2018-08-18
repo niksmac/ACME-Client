@@ -62,14 +62,14 @@
       $qsa('.js-acme-challenge-type'), function ($el) { return $el.checked; }
     )[0];
     console.log('ch type radio:', input.value);
-    $qs('.js-acme-table-wildcard').hidden = true;
-    $qs('.js-acme-table-http-01').hidden = true;
-    $qs('.js-acme-table-dns-01').hidden = true;
+    $qs('.js-acme-verification-wildcard').hidden = true;
+    $qs('.js-acme-verification-http-01').hidden = true;
+    $qs('.js-acme-verification-dns-01').hidden = true;
     if (info.challenges.wildcard) {
-      $qs('.js-acme-table-wildcard').hidden = false;
+      $qs('.js-acme-verification-wildcard').hidden = false;
     }
     if (info.challenges[input.value]) {
-      $qs('.js-acme-table-' + input.value).hidden = false;
+      $qs('.js-acme-verification-' + input.value).hidden = false;
     }
   }
   $qsa('.js-acme-challenge-type').forEach(function ($el) {
@@ -107,7 +107,7 @@
   steps[1].submit = function () {
     info.identifiers = $qs('.js-acme-domains').value.split(/\s*,\s*/g).map(function (hostname) {
       return { type: 'dns', value: hostname.toLowerCase().trim() };
-    });
+    }).slice(0,1); //Disable multiple values for now.  We'll just take the first and work with it.
     info.identifiers.sort(function (a, b) {
       if (a === b) { return 0; }
       if (a < b) { return 1; }
@@ -216,19 +216,22 @@
                 console.log('claims:');
                 console.log(claims);
                 var obj = { 'dns-01': [], 'http-01': [], 'wildcard': [] };
-                var map = {
-                  'http-01': '.js-acme-table-http-01'
-                , 'dns-01': '.js-acme-table-dns-01'
-                , 'wildcard': '.js-acme-table-wildcard'
-                }
-                var tpls = {};
                 info.challenges = obj;
+                var map = {
+                  'http-01': '.js-acme-verification-http-01'
+                , 'dns-01': '.js-acme-verification-dns-01'
+                , 'wildcard': '.js-acme-verification-wildcard'
+                }
+
+                /*
+                var tpls = {};
                 Object.keys(map).forEach(function (k) {
                   var sel = map[k] + ' tbody';
                   console.log(sel);
                   tpls[k] = $qs(sel).innerHTML;
                   $qs(map[k] + ' tbody').innerHTML = '';
                 });
+                */
 
                 // TODO make Promise-friendly
                 return Promise.all(claims.map(function (claim) {
@@ -265,6 +268,7 @@
 
                       if (claim.wildcard) {
                         obj.wildcard.push(data);
+
                         $qs(map.wildcard).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
                       } else if(obj[data.type]) {
 
@@ -272,7 +276,12 @@
                         if ('dns-01' === data.type) {
                           $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
                         } else if ('http-01' === data.type) {
-                          $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.httpPath + '</td><td>' + data.httpAuth + '</td></tr>';
+                          $qs("#js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
+                          $qs("#js-acme-ver-content").innerHTML = data.httpAuth;
+                          $qs("#js-acme-ver-uri").innerHTML = data.httpPath;
+                          $qs("#js-download-verify-link").href =
+                            "data:text/octet-stream;base64," + window.btoa(data.httpAuth);
+                          $qs("#js-download-verify-link").download = data.httpPath.split("/").slice(-1);
                         }
                       }
 
