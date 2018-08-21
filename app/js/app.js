@@ -51,12 +51,14 @@
     
     steps[j].submit(ev);
   }
+
   $qsa('.js-acme-form').forEach(function ($el) {
     $el.addEventListener('submit', function (ev) {
       ev.preventDefault();
       submitForm(ev);
     });
   });
+
   function updateChallengeType() {
     var input = this || Array.prototype.filter.call(
       $qsa('.js-acme-challenge-type'), function ($el) { return $el.checked; }
@@ -273,8 +275,11 @@
                       } else if(obj[data.type]) {
 
                         obj[data.type].push(data);
+
                         if ('dns-01' === data.type) {
-                          $qs(map[data.type]).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
+                          $qs("#js-acme-ver-hostname").innerHTML = data.hostname;
+                          $qs("#js-acme-ver-txt-host").innerHTML = data.dnsHost;
+                          $qs("#js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
                         } else if ('http-01' === data.type) {
                           $qs("#js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
                           $qs("#js-acme-ver-content").innerHTML = data.httpAuth;
@@ -465,7 +470,7 @@
       }).then(function (certs) {
         console.log('WINNING!');
         console.log(certs);
-        $qs('.js-fullchain').value = certs;
+        $qs('#js-fullchain').innerHTML = certs;
 
         // https://stackoverflow.com/questions/40314257/export-webcrypto-key-to-pem-format
 				function spkiToPEM(keydata){
@@ -524,7 +529,7 @@
 				  return window.crypto.subtle.exportKey("pkcs8", privateKey);
 				}).then (function (keydata) {
 					var pem = spkiToPEM(keydata);
-					$qs('.js-privkey').value = pem;
+					$qs('#js-privkey').innerHTML = pem;
           steps[i]();
 				}).catch(function(err){
 					console.error(err);
@@ -552,6 +557,8 @@
         ele.checked = true;
       }
     });
+
+    updateApiType();
     steps[2]();
     submitForm();
   }

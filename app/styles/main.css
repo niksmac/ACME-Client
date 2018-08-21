@@ -1,79 +1,114 @@
+body {
+    font-size: 18px;
+    font-family: Source Sans Pro, sans-serif;
+    margin: 0;
+    line-height: 1.33;
+    color: #1a1a1a;
+}
+
+h1 {
+    text-align: center;
+    font-size: 1.77777778em;
+}
+
+a {
+    color: #1a1a1a;
+}
+
+input[type=email], input[type=text] {
+    font-size: 1em;
+    padding: 0.444444444em 0.888889em;
+    width: 100%;
+    border: solid 1px #d9d9d9;
+    border-radius: 2px;
+}
+
+pre {
+    margin: 0;
+    font-family: Source Code Pro, monospace;
+}
+
 .column-row {
-  width: 22.222222em;
+    width: 22.222222em;
 }
 
 .column-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .progress-bar {
-  height: 0;
-  border: solid 1px #5bc17f;
-  background-color: #5bc17f;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 22em;
-  margin: 1.388888889em auto;
+    height: 0;
+    border: solid 1px #5bc17f;
+    background-color: #5bc17f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 22em;
+    margin: 1.388888889em auto;
 }
 
 .greenlock-logo-badge > img {
-  width: 100%;
+    width: 100%;
 }
 
 .greenlock-logo-badge {
-  display: inline-block;
-  border: solid 1px #d9d9d9;
-  border-radius: 500px;
-  width: 5.333333333em;
-  height: 5.333333333em;
-  margin-top: 4.277777778em;
+    display: inline-block;
+    border: solid 1px #d9d9d9;
+    border-radius: 500px;
+    width: 5.333333333em;
+    height: 5.333333333em;
+    margin-top: 4.277777778em;
 }
 
 .header-row {
-  text-align: center;
+    text-align: center;
 }
 
-.progress-bar-step {position: relative;margin: -0.722222222em -0.166666667em;display: inline-block;background-color: white;/* border-radius: 100%; */padding: 0 0.111111em;}
+.progress-bar-step {
+    position: relative;
+    margin: -0.722222222em -0.166666667em;
+    display: inline-block;
+    background-color: white;
+    /* border-radius: 100%; */
+    padding: 0 0.111111em;
+}
 
 .progress-bar-step > .circle {
-  content: "";
-  display: inline-block;
-  border: solid 0.111111111em #5bc17f;
-  width: 0.888888889em;
-  height: 0.888888889em;
-  border-radius: 100%;
-  background: white;
+    content: "";
+    display: inline-block;
+    border: solid 0.111111111em #5bc17f;
+    width: 0.888888889em;
+    height: 0.888888889em;
+    border-radius: 100%;
+    background: white;
 }
 
 .progress-step-label {
-  text-align: center;
-  position: absolute;
-  left: 50%;
-  =: block
-  font-size:;
-  top: 139%;
-  font-size: 0.722222222em;
-  white-space: nowrap;
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    =: block font-size: ;
+    top: 139%;
+    font-size: 0.722222222em;
+    white-space: nowrap;
 }
 
 .progress-step-label > div {
-  position: relative;
-  right: 50%;
-}
-
-body {
-  font-size: 18px;
-  font-family: Source Sans Pro, sans-serif;
-  margin: 0;
-  line-height: 1.33;
-  color: #1a1a1a;
+    position: relative;
+    right: 50%;
 }
 
 .greenlock-name {
-  color: #808080;
+    color: #808080;
+}
+
+.file-preview {
+    background: #f7f7f7;
+    position: relative;
+    font-size: 0.833333333em;
+    padding: 1.6em 2.9333em 1.6em 1.6em;
 }
 
 .js-progress-step-complete > .circle, .js-progress-step-started > .circle {
@@ -84,22 +119,6 @@ body {
     fill: white;
     /* stroke: none; */
     display: initial;
-}
-
-svg {}
-
-.js-progress-step-complete > .circle {}
-
-h1 {
-    font-size: 1.77777778em;
-}
-
-input[type=email], input[type=text] {
-    font-size: 1em;
-    padding: 0.444444444em 0.888889em;
-    width: 100%;
-    border: solid 1px #d9d9d9;
-    border-radius: 2px;
 }
 
 .checkbox-array {
@@ -120,7 +139,6 @@ input[type=email], input[type=text] {
     display: initial;
 }
 
-
 .checkbox-array input[type=checkbox]:checked ~ .icon-checked-box {
     display: initial;
 }
@@ -140,10 +158,6 @@ input[type=email], input[type=text] {
     height: 1.333333333em;
     font-size: 0.833333333em;
     margin: 0.4em 0;
-}
-
-a {
-    color: #1a1a1a;
 }
 
 .email-usage {
@@ -177,10 +191,6 @@ a {
     display: none;
 }
 
-table.js-acme-table-http-01, table.js-acme-table-dns-01 {
-    margin-left: -14em;
-}
-
 .download-ver-file svg {
     fill: #5bc17f;
     width: 1.333333333em;
@@ -190,24 +200,16 @@ table.js-acme-table-http-01, table.js-acme-table-dns-01 {
     color: #5bc17f;
 }
 
-.download-ver-file {
-}
-
 .mdicon {
     position: relative;
     top: 0.4em;
 }
 
 .http-verification-info {
-    background:  #f7f7f7;
-    position: relative;
-    font-size: 0.833333333em;
-    padding: 1.6em 6.933333333em 1.6em 1.6em;
-    word-break: break-all;
-    text-align: start;
+    padding-right: 6.933333333em;
 }
 
-.file-ver-corner-fold {
+.paper-fold {
     position: absolute;
     width: 2em;
     height: 2em;
@@ -232,6 +234,19 @@ table.js-acme-table-http-01, table.js-acme-table-dns-01 {
     margin: auto;
 }
 
-h1 {
-    text-align: center;
+.acme-ver-dns-label {
+    margin: 1.777777778em 0 0.444444444em 0;
+    border-bottom: solid 1px #d9d9d9;
+    font-weight: bold;
+    padding-bottom: 0.166666667em;
+}
+
+.tabbed-selector input[type="radio"]:checked ~ div {
+    border: solid 1px #5bc17f;
+    background-color: #5bc17f;
+}
+
+.file-preview pre {
+    white-space: pre-line;
+    word-break: break-all;
 }
