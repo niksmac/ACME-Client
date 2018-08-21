@@ -191,12 +191,12 @@ pre {
     display: none;
 }
 
-.download-ver-file svg {
+.download-file svg {
     fill: #5bc17f;
     width: 1.333333333em;
 }
 
-.download-ver-file a {
+.download-file a {
     color: #5bc17f;
 }
 
@@ -249,4 +249,9 @@ pre {
 .file-preview pre {
     white-space: pre-line;
     word-break: break-all;
+}
+
+
+.cert-download-container {
+    margin: 0 -31%;
 }

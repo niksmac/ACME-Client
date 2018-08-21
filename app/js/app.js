@@ -471,6 +471,8 @@
         console.log('WINNING!');
         console.log(certs);
         $qs('#js-fullchain').innerHTML = certs;
+        $qs("#js-download-fullchain-link").href =
+          "data:text/octet-stream;base64," + window.btoa(certs);
 
         // https://stackoverflow.com/questions/40314257/export-webcrypto-key-to-pem-format
 				function spkiToPEM(keydata){
@@ -530,6 +532,8 @@
 				}).then (function (keydata) {
 					var pem = spkiToPEM(keydata);
 					$qs('#js-privkey').innerHTML = pem;
+          $qs("#js-download-privkey-link").href =
+            "data:text/octet-stream;base64," + window.btoa(pem);
           steps[i]();
 				}).catch(function(err){
 					console.error(err);
