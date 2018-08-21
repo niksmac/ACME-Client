@@ -19,6 +19,13 @@
         src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2) format('woff2');
         unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
       }
+      @font-face {
+        font-family: 'Source Code Pro';
+        font-style: normal;
+        font-weight: 400;
+        src: local('Source Code Pro'), local('SourceCodePro-Regular'), url(./fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
     </style>
 
     <link href="styles/main.css" rel="stylesheet">
@@ -163,70 +170,60 @@
             </label>
           </div>
           <div class="js-acme-challenges">
-
-          <h3>Upload this file</h3>
-
-          <div class="js-acme-verification-http-01">
-            <div class="http-verification-info">
-              <div class="file-ver-corner-fold"></div>
-              <div>
-                <div class="file-ver-info-header">FILENAME</div>
-                <div id="js-acme-ver-file-location">...loading</div>
+            <div class="js-acme-verification-http-01">
+              <h3>Upload this file</h3>
+              <div class="http-verification-info file-preview">
+                <div class="paper-fold"></div>
+                <div>
+                  <div class="file-ver-info-header">FILENAME</div>
+                  <pre id="js-acme-ver-file-location">...loading</pre>
+                </div>
+                <hr>
+                <div>
+                  <div class="file-ver-info-header">CONTENTS</div>
+                  <pre id="js-acme-ver-content">...loading</pre>
+                </div>
               </div>
-              <hr>
-              <div>
-                <div class="file-ver-info-header">CONTENTS</div>
-                <div id="js-acme-ver-content">...loading</div>
+              <div class="download-ver-file">
+                <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <use xlink:href="#svg-download"></use>
+                </svg>
+                <a id="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
+                  Download
+                </a>
               </div>
+              <h3>To this location</h3>
+              <div id="js-acme-ver-uri" class="acme-ver-uri">..loading</div>
             </div>
-            <div class="download-ver-file">
-              <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-download"></use>
-              </svg>
-              <a id="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
-                Download
-              </a>
+            <div class="js-acme-verification-dns-01">
+              <div class="acme-ver-dns-label">Hostname</div>
+              <div id="js-acme-ver-hostname">loading...</div>
+              <div class="acme-ver-dns-label">TXT Host</div>
+              <div id="js-acme-ver-txt-host">loading...</div>
+              <div class="acme-ver-dns-label">TXT Value</div>
+              <div id="js-acme-ver-txt-value">loading...</div>
             </div>
-          <h3>To this location</h3>
-          <div id="js-acme-ver-uri" class="acme-ver-uri">..loading</div>
-          </div>
-          <table class="js-acme-verification-dns-01">
-            <thead>
-              <tr>
-                <th>Hostname</th>
-                <th>TXT Host</th>
-                <th>TXT Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>example.com</td>
-                <td>_acme-challenge.example.com</td>
-                <td>4A54</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
 
-          <div class="js-acme-wildcard">
-            <h2>Verify Wildcard Domains</h2>
+            <div class="js-acme-wildcard">
+              <h2>Verify Wildcard Domains</h2>
 
-            <table class="js-acme-verification-wildcard">
-              <thead>
-                <tr>
-                  <th>Hostname</th>
-                  <th>TXT Host</th>
-                  <th>TXT Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>example.com</td>
-                  <td>_acme-challenge.example.com</td>
-                  <td>4A54</td>
-                </tr>
-              </tbody>
-            </table>
+              <table class="js-acme-verification-wildcard">
+                <thead>
+                  <tr>
+                    <th>Hostname</th>
+                    <th>TXT Host</th>
+                    <th>TXT Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>example.com</td>
+                    <td>_acme-challenge.example.com</td>
+                    <td>4A54</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <button class="button-next" type="submit">Next</button>
@@ -264,12 +261,16 @@
         <form class="js-acme-form js-acme-form-download">
           <div>
             <h2><label>privkey.pem</label></h2>
-            <textarea cols="80" rows="10" class="js-privkey">-</textarea>
+            <div class="acme-result-privkey file-preview">
+              <div class="paper-fold"></div>
+              <pre id="js-privkey">
+              </pre>
             </div>
-
-            <div>
             <h2><label>fullchain.pem</label></h2>
-            <textarea cols="80" rows="60" class="js-fullchain">-</textarea>
+            <div class="acme-result-fullchain file-preview">
+              <div class="paper-fold"></div>
+              <pre id="js-fullchain">
+              </pre>
             </div>
 
             <div>
