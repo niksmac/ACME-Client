@@ -184,7 +184,7 @@
                   <pre id="js-acme-ver-content">...loading</pre>
                 </div>
               </div>
-              <div class="download-ver-file">
+              <div class="download-file">
                 <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                   <use xlink:href="#svg-download"></use>
                 </svg>
@@ -259,12 +259,20 @@
 
         <!-- Step 5 Get Certs -->
         <form class="js-acme-form js-acme-form-download">
-          <div>
+          <div class="cert-download-container">
             <h2><label>privkey.pem</label></h2>
             <div class="acme-result-privkey file-preview">
               <div class="paper-fold"></div>
               <pre id="js-privkey">
               </pre>
+            </div>
+            <div class="download-file">
+              <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-download"></use>
+              </svg>
+              <a id="js-download-privkey-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="privkey.pem" target="_blank">
+                Download
+              </a>
             </div>
             <h2><label>fullchain.pem</label></h2>
             <div class="acme-result-fullchain file-preview">
@@ -272,7 +280,14 @@
               <pre id="js-fullchain">
               </pre>
             </div>
-
+            <div class="download-file">
+              <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <use xlink:href="#svg-download"></use>
+              </svg>
+              <a id="js-download-fullchain-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="fullchain.pem" target="_blank">
+                Download
+              </a>
+            </div>
             <div>
             <h3>node.js https server example</h3>
             <pre><code>'use strict';
