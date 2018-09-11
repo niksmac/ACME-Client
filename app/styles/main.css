@@ -128,7 +128,8 @@ pre {
 }
 
 .checkbox-array input[type=checkbox] {
-    display: none;
+    opacity: 0;
+    position: absolute;
 }
 
 .checkbox-array input[type=checkbox] ~ .icon-checked-box {
@@ -254,4 +255,8 @@ pre {
 
 .cert-download-container {
     margin: 0 -31%;
+}
+
+.checkbox-array input[type=checkbox]:focus ~ .icon-checked-box, .checkbox-array input[type=checkbox]:focus ~ .icon-unchecked-box {
+    background: #5bc17f52;
 }
