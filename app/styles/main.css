@@ -161,6 +161,10 @@ pre {
     margin: 0.4em 0;
 }
 
+.checkbox-array input[type=checkbox]:focus ~ .icon-checked-box, .checkbox-array input[type=checkbox]:focus ~ .icon-unchecked-box {
+    background: #5bc17f52;
+}
+
 .email-usage {
     color: #666666;
     font-size: 0.833333333em;
@@ -257,6 +261,3 @@ pre {
     margin: 0 -31%;
 }
 
-.checkbox-array input[type=checkbox]:focus ~ .icon-checked-box, .checkbox-array input[type=checkbox]:focus ~ .icon-unchecked-box {
-    background: #5bc17f52;
-}
