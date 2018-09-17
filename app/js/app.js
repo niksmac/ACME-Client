@@ -84,7 +84,11 @@
       method: 'POST'
     , cors: true
     , headers: new Headers({ 'Content-Type': 'application/json' })
-    , body: JSON.stringify({ address: email, comment: 'greenlock sub for ' + domains.join(',') })
+    , body: JSON.stringify({
+        address: email
+      , list: 'greenlock@ppl.family'
+      , domain: domains.join(',')
+      })
     }).then(function (resp) {
       return resp.json().then(function (data) {
         /*
@@ -94,7 +98,7 @@
         }
         */
       });
-    }, function () {
+    }).catch(function () {
       /*
       window.alert("Didn't get your contact. Bad network connection? Email coolaj86@gmail.com instead.");
       */
