@@ -1,6 +1,7 @@
 (function () {
 'use strict';
 
+  var BROWSER_SUPPORTS_ECDSA = navigator.userAgent.toLowerCase().indexOf('firefox') === -1;
   var $qs = function (s) { return window.document.querySelector(s); };
   var $qsa = function (s) { return window.document.querySelectorAll(s); };
   var info = {};
@@ -321,7 +322,7 @@
       });
     }).catch(function (err) {
       console.error('Step \'' + i + '\' Error:');
-      console.error(err);
+      console.error(err, err.stack);
     });
   };
 
@@ -423,10 +424,21 @@
     var p;
 
     function createKeypair() {
-      return BACME.accounts.generateKeypair({
-        type: 'ECDSA'
-      , bitlength: '256'
-      }).then(function (serverJwk) {
+      let opts;
+
+      if(BROWSER_SUPPORTS_ECDSA) {
+        opts = {
+          type: 'ECDSA'
+        , bitlength: '256'
+        };
+      } else {
+        opts = {
+          type: 'RSA'
+        , bitlength: '2048'
+        };
+      }
+
+      return BACME.accounts.generateKeypair(opts).then(function (serverJwk) {
         localStorage.setItem('server:' + key, JSON.stringify(serverJwk));
         return serverJwk;
       })
@@ -532,15 +544,15 @@
         , true
         , ["sign"]
 				).then(function (privateKey) {
-				  return window.crypto.subtle.exportKey("pkcs8", privateKey);
+          return window.crypto.subtle.exportKey("pkcs8", privateKey);
 				}).then (function (keydata) {
 					var pem = spkiToPEM(keydata);
 					$qs('#js-privkey').innerHTML = pem;
           $qs("#js-download-privkey-link").href =
             "data:text/octet-stream;base64," + window.btoa(pem);
           steps[i]();
-				}).catch(function(err){
-					console.error(err);
+        }).catch(function(err){
+          console.error(err.toString());
 				});
       });
     });
