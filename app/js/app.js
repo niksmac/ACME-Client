@@ -444,7 +444,7 @@
         };
       }
 
-      return BACME.accounts.generateKeypair(opts).then(function (serverJwk) {
+      return BACME.domains.generateKeypair(opts).then(function (serverJwk) {
         localStorage.setItem('server:' + key, JSON.stringify(serverJwk));
         return serverJwk;
       });
