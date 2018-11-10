@@ -1,11 +1,12 @@
+/*global CSR*/
+// CSR takes a while to load after the page load
 (function (exports) {
 'use strict';
 
 var BACME = exports.BACME = {};
 var webFetch = exports.fetch;
 var webCrypto = exports.crypto;
-var Promise = window.Promise;
-var CSR = window.CSR;
+var Promise = exports.Promise;
 
 var directoryUrl = 'https://acme-staging-v02.api.letsencrypt.org/directory';
 var directory;
