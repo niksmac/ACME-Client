@@ -4,6 +4,8 @@
 var BACME = exports.BACME = {};
 var webFetch = exports.fetch;
 var webCrypto = exports.crypto;
+var Promise = window.Promise;
+var CSR = window.CSR;
 
 var directoryUrl = 'https://acme-staging-v02.api.letsencrypt.org/directory';
 var directory;
@@ -15,7 +17,6 @@ var accountKeypair;
 var accountJwk;
 
 var accountUrl;
-var signedAccount;
 
 BACME.challengePrefixes = {
   'http-01': '/.well-known/acme-challenge'
@@ -23,38 +24,38 @@ BACME.challengePrefixes = {
 };
 
 BACME._logHeaders = function (resp) {
-	console.log('Headers:');
-	Array.from(resp.headers.entries()).forEach(function (h) { console.log(h[0] + ': ' + h[1]); });
+  console.log('Headers:');
+  Array.from(resp.headers.entries()).forEach(function (h) { console.log(h[0] + ': ' + h[1]); });
 };
 
 BACME._logBody = function (body) {
-	console.log('Body:');
-	console.log(JSON.stringify(body, null, 2));
-	console.log('');
+  console.log('Body:');
+  console.log(JSON.stringify(body, null, 2));
+  console.log('');
 };
 
 BACME.directory = function (opts) {
-	return webFetch(opts.directoryUrl || directoryUrl, { mode: 'cors' }).then(function (resp) {
-		BACME._logHeaders(resp);
-		return resp.json().then(function (body) {
-			directory = body;
+  return webFetch(opts.directoryUrl || directoryUrl, { mode: 'cors' }).then(function (resp) {
+    BACME._logHeaders(resp);
+    return resp.json().then(function (body) {
+      directory = body;
       nonceUrl = directory.newNonce || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-nonce';
       accountUrl = directory.newAccount || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-account';
       orderUrl = directory.newOrder || "https://acme-staging-v02.api.letsencrypt.org/acme/new-order";
       BACME._logBody(body);
       return body;
-		});
-	});
+    });
+  });
 };
 
 BACME.nonce = function () {
-	return webFetch(nonceUrl, { mode: 'cors' }).then(function (resp) {
+  return webFetch(nonceUrl, { mode: 'cors' }).then(function (resp) {
     BACME._logHeaders(resp);
-		nonce = resp.headers.get('replay-nonce');
-		console.log('Nonce:', nonce);
-		// resp.body is empty
-		return resp.headers.get('replay-nonce');
-	});
+    nonce = resp.headers.get('replay-nonce');
+    console.log('Nonce:', nonce);
+    // resp.body is empty
+    return resp.headers.get('replay-nonce');
+  });
 };
 
 BACME.accounts = {};
@@ -62,66 +63,38 @@ BACME.accounts = {};
 // type = ECDSA
 // bitlength = 256
 BACME.accounts.generateKeypair = function (opts) {
-  var wcOpts = {};
+  return BACME.generateKeypair(opts).then(function (result) {
+    accountKeypair = result;
 
-  // ECDSA has only the P curves and an associated bitlength
-  if (/^EC/i.test(opts.type)) {
-    wcOpts.name = 'ECDSA';
-    if (/256/.test(opts.bitlength)) {
-      wcOpts.namedCurve = 'P-256';
-    }
-  }
+    return webCrypto.subtle.exportKey(
+      "jwk"
+    , result.privateKey
+    ).then(function (privJwk) {
 
-  // RSA-PSS is another option, but I don't think it's used for Let's Encrypt
-  // I think the hash is only necessary for signing, not generation or import
-  if (/^RS/i.test(opts.type)) {
-    wcOpts.name = 'RSASSA-PKCS1-v1_5';
-    wcOpts.modulusLength = opts.bitlength;
-    if (opts.bitlength < 2048) {
-      wcOpts.modulusLength = opts.bitlength * 8;
-    }
-    wcOpts.publicExponent = new Uint8Array([0x01, 0x00, 0x01]);
-    wcOpts.hash = { name: "SHA-256" };
-  }
-
-	// https://github.com/diafygi/webcrypto-examples#ecdsa---generatekey
-	var extractable = true;
-	return webCrypto.subtle.generateKey(
-		wcOpts
-	, extractable
-	, [ 'sign', 'verify' ]
-	).then(function (result) {
-		accountKeypair = result;
-
-		return webCrypto.subtle.exportKey(
-			"jwk"
-		, result.privateKey
-		).then(function (privJwk) {
-
-			accountJwk = privJwk;
-			console.log('private jwk:');
-			console.log(JSON.stringify(privJwk, null, 2));
+      accountJwk = privJwk;
+      console.log('private jwk:');
+      console.log(JSON.stringify(privJwk, null, 2));
 
       return privJwk;
       /*
-			return webCrypto.subtle.exportKey(
-				"pkcs8"
-			, result.privateKey
-			).then(function (keydata) {
-				console.log('pkcs8:');
-				console.log(Array.from(new Uint8Array(keydata)));
+      return webCrypto.subtle.exportKey(
+        "pkcs8"
+      , result.privateKey
+      ).then(function (keydata) {
+        console.log('pkcs8:');
+        console.log(Array.from(new Uint8Array(keydata)));
 
         return privJwk;
         //return accountKeypair;
-			});
+      });
       */
-		})
-	});
+    });
+  });
 };
 
 // json to url-safe base64
 BACME._jsto64 = function (json) {
-	return btoa(JSON.stringify(json)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return btoa(JSON.stringify(json)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 };
 
 var textEncoder = new TextEncoder();
@@ -158,7 +131,7 @@ BACME._importKey = function (jwk) {
       e: priv.e
     , kty: priv.kty
     , n: priv.n
-    }
+    };
     if (!priv.p) {
       priv = null;
     }
@@ -167,7 +140,7 @@ BACME._importKey = function (jwk) {
   return window.crypto.subtle.importKey(
     "jwk"
   , pub
-	, wcOpts
+  , wcOpts
   , extractable
   , [ "verify" ]
   ).then(function (publicKey) {
@@ -271,8 +244,8 @@ BACME.accounts.sign = function (opts) {
       protectedJson
     );
 
-		// Note: this function hashes before signing so send data, not the hash
-		return BACME._sign({
+    // Note: this function hashes before signing so send data, not the hash
+    return BACME._sign({
       abstractKey: abstractKey
     , payload64: payload64
     , protected64: protected64
@@ -280,30 +253,29 @@ BACME.accounts.sign = function (opts) {
   });
 };
 
-var account;
 var accountId;
 
 BACME.accounts.set = function (opts) {
-	nonce = null;
-	return window.fetch(accountUrl, {
-		mode: 'cors'
-	, method: 'POST'
-	, headers: { 'Content-Type': 'application/jose+json' }
-	, body: JSON.stringify(opts.signedAccount)
-	}).then(function (resp) {
-		BACME._logHeaders(resp);
-		nonce = resp.headers.get('replay-nonce');
-		accountId = resp.headers.get('location');
-		console.log('Next nonce:', nonce);
-		console.log('Location/kid:', accountId);
+  nonce = null;
+  return window.fetch(accountUrl, {
+    mode: 'cors'
+  , method: 'POST'
+  , headers: { 'Content-Type': 'application/jose+json' }
+  , body: JSON.stringify(opts.signedAccount)
+  }).then(function (resp) {
+    BACME._logHeaders(resp);
+    nonce = resp.headers.get('replay-nonce');
+    accountId = resp.headers.get('location');
+    console.log('Next nonce:', nonce);
+    console.log('Location/kid:', accountId);
 
-		if (!resp.headers.get('content-type')) {
-		 console.log('Body: <none>');
+    if (!resp.headers.get('content-type')) {
+     console.log('Body: <none>');
 
-		 return { kid: accountId };
-		}
+     return { kid: accountId };
+    }
 
-		return resp.json().then(function (result) {
+    return resp.json().then(function (result) {
       if (/^Error/i.test(result.detail)) {
         return Promise.reject(new Error(result.detail));
       }
@@ -311,21 +283,20 @@ BACME.accounts.set = function (opts) {
       BACME._logBody(result);
 
       return result;
-		});
-	});
+    });
+  });
 };
 
 var orderUrl;
-var signedOrder;
 
 BACME.orders = {};
 
 // identifiers = [ { type: 'dns', value: 'example.com' }, { type: 'dns', value: '*.example.com' } ]
 // signedAccount
 BACME.orders.sign = function (opts) {
-	var payload64 = BACME._jsto64({ identifiers: opts.identifiers });
+  var payload64 = BACME._jsto64({ identifiers: opts.identifiers });
 
-	return BACME._importKey(opts.jwk).then(function (abstractKey) {
+  return BACME._importKey(opts.jwk).then(function (abstractKey) {
     var protected64 = BACME._jsto64(
       { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: orderUrl, kid: opts.kid }
     );
@@ -345,36 +316,35 @@ BACME.orders.sign = function (opts) {
   });
 };
 
-var order;
 var currentOrderUrl;
 var authorizationUrls;
 var finalizeUrl;
 
 BACME.orders.create = function (opts) {
-	nonce = null;
-	return window.fetch(orderUrl, {
-		mode: 'cors'
-	, method: 'POST'
-	, headers: { 'Content-Type': 'application/jose+json' }
-	, body: JSON.stringify(opts.signedOrder)
-	}).then(function (resp) {
+  nonce = null;
+  return window.fetch(orderUrl, {
+    mode: 'cors'
+  , method: 'POST'
+  , headers: { 'Content-Type': 'application/jose+json' }
+  , body: JSON.stringify(opts.signedOrder)
+  }).then(function (resp) {
     BACME._logHeaders(resp);
-		currentOrderUrl = resp.headers.get('location');
-		nonce = resp.headers.get('replay-nonce');
-		console.log('Next nonce:', nonce);
+    currentOrderUrl = resp.headers.get('location');
+    nonce = resp.headers.get('replay-nonce');
+    console.log('Next nonce:', nonce);
 
-		return resp.json().then(function (result) {
+    return resp.json().then(function (result) {
       if (/^Error/i.test(result.detail)) {
         return Promise.reject(new Error(result.detail));
       }
-			authorizationUrls = result.authorizations;
-			finalizeUrl = result.finalize;
+      authorizationUrls = result.authorizations;
+      finalizeUrl = result.finalize;
       BACME._logBody(result);
 
       result.url = currentOrderUrl;
       return result;
-		});
-	});
+    });
+  });
 };
 
 BACME.challenges = {};
@@ -395,22 +365,22 @@ BACME.challenges.all = function () {
   return next();
 };
 BACME.challenges.view = function () {
-	var authzUrl = authorizationUrls.pop();
-	var token;
-	var challengeDomain;
-	var challengeUrl;
+  var authzUrl = authorizationUrls.pop();
+  var token;
+  var challengeDomain;
+  var challengeUrl;
 
-	return window.fetch(authzUrl, {
-		mode: 'cors'
-	}).then(function (resp) {
+  return window.fetch(authzUrl, {
+    mode: 'cors'
+  }).then(function (resp) {
     BACME._logHeaders(resp);
 
-		return resp.json().then(function (result) {
-			// Note: select the challenge you wish to use
-			var challenge = result.challenges.slice(0).pop();
-			token = challenge.token;
-			challengeUrl = challenge.url;
-			challengeDomain = result.identifier.value;
+    return resp.json().then(function (result) {
+      // Note: select the challenge you wish to use
+      var challenge = result.challenges.slice(0).pop();
+      token = challenge.token;
+      challengeUrl = challenge.url;
+      challengeDomain = result.identifier.value;
 
       BACME._logBody(result);
 
@@ -424,8 +394,8 @@ BACME.challenges.view = function () {
       //, url: challenge.url
       //, domain: result.identifier.value,
       };
-		});
-	});
+    });
+  });
 };
 
 var thumbprint;
@@ -435,7 +405,7 @@ var dnsAuth;
 var dnsRecord;
 
 BACME.thumbprint = function (opts) {
-	// https://stackoverflow.com/questions/42588786/how-to-fingerprint-a-jwk
+  // https://stackoverflow.com/questions/42588786/how-to-fingerprint-a-jwk
 
   var accountJwk = opts.jwk;
   var keys;
@@ -446,34 +416,34 @@ BACME.thumbprint = function (opts) {
     keys = [ 'e', 'kty', 'n' ];
   }
 
-	var accountPublicStr = '{' + keys.map(function (key) {
-		return '"' + key + '":"' + accountJwk[key] + '"';
-	}).join(',') + '}';
+  var accountPublicStr = '{' + keys.map(function (key) {
+    return '"' + key + '":"' + accountJwk[key] + '"';
+  }).join(',') + '}';
 
-	return window.crypto.subtle.digest(
-		{ name: "SHA-256" } // SHA-256 is spec'd, non-optional
-	, textEncoder.encode(accountPublicStr)
-	).then(function (hash) {
-		thumbprint = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
-			return String.fromCharCode(ch);
-		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return window.crypto.subtle.digest(
+    { name: "SHA-256" } // SHA-256 is spec'd, non-optional
+  , textEncoder.encode(accountPublicStr)
+  ).then(function (hash) {
+    thumbprint = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
+      return String.fromCharCode(ch);
+    }).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 
-		console.log('Thumbprint:');
-		console.log(opts);
-		console.log(accountPublicStr);
-		console.log(thumbprint);
+    console.log('Thumbprint:');
+    console.log(opts);
+    console.log(accountPublicStr);
+    console.log(thumbprint);
 
     return thumbprint;
-	});
+  });
 };
 
 // { token, thumbprint, challengeDomain }
 BACME.challenges['http-01'] = function (opts) {
-	// The contents of the key authorization file
-	keyAuth = opts.token + '.' + opts.thumbprint;
+  // The contents of the key authorization file
+  keyAuth = opts.token + '.' + opts.thumbprint;
 
-	// Where the key authorization file goes
-	httpPath = 'http://' + opts.challengeDomain + '/.well-known/acme-challenge/' + opts.token;
+  // Where the key authorization file goes
+  httpPath = 'http://' + opts.challengeDomain + '/.well-known/acme-challenge/' + opts.token;
 
   console.log("echo '" + keyAuth + "' > '" + httpPath + "'");
 
@@ -487,28 +457,28 @@ BACME.challenges['http-01'] = function (opts) {
 BACME.challenges['dns-01'] = function (opts) {
   console.log('opts.keyAuth for DNS:');
   console.log(opts.keyAuth);
-	return window.crypto.subtle.digest(
-		{ name: "SHA-256", }
-	, textEncoder.encode(opts.keyAuth)
-	).then(function (hash) {
-		dnsAuth = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
-			return String.fromCharCode(ch);
-		}).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return window.crypto.subtle.digest(
+    { name: "SHA-256", }
+  , textEncoder.encode(opts.keyAuth)
+  ).then(function (hash) {
+    dnsAuth = btoa(Array.prototype.map.call(new Uint8Array(hash), function (ch) {
+      return String.fromCharCode(ch);
+    }).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 
-		dnsRecord = '_acme-challenge.' + opts.challengeDomain;
+    dnsRecord = '_acme-challenge.' + opts.challengeDomain;
 
-		console.log('DNS TXT Auth:');
-		// The name of the record
-		console.log(dnsRecord);
-		// The TXT record value
-		console.log(dnsAuth);
+    console.log('DNS TXT Auth:');
+    // The name of the record
+    console.log(dnsRecord);
+    // The TXT record value
+    console.log(dnsAuth);
 
     return {
       type: 'TXT'
     , host: dnsRecord
     , answer: dnsAuth
     };
-	});
+  });
 };
 
 var challengePollUrl;
@@ -516,84 +486,108 @@ var challengePollUrl;
 // { jwk, challengeUrl, accountId (kid) }
 BACME.challenges.accept = function (opts) {
   var payload64 = BACME._jsto64(
-		{}
-	);
+    {}
+  );
 
   return BACME._importKey(opts.jwk).then(function (abstractKey) {
     var protected64 = BACME._jsto64(
       { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: opts.challengeUrl, kid: opts.accountId }
     );
-		return BACME._sign({
+    return BACME._sign({
       abstractKey: abstractKey
     , payload64: payload64
     , protected64: protected64
     });
   }).then(function (signedAccept) {
 
-	  nonce = null;
-		return window.fetch(
-			opts.challengeUrl
-		, { mode: 'cors'
-			, method: 'POST'
-			, headers: { 'Content-Type': 'application/jose+json' }
-			, body: JSON.stringify(signedAccept)
-			}
-		).then(function (resp) {
+    nonce = null;
+    return window.fetch(
+      opts.challengeUrl
+    , { mode: 'cors'
+      , method: 'POST'
+      , headers: { 'Content-Type': 'application/jose+json' }
+      , body: JSON.stringify(signedAccept)
+      }
+    ).then(function (resp) {
       BACME._logHeaders(resp);
-			nonce = resp.headers.get('replay-nonce');
+      nonce = resp.headers.get('replay-nonce');
       console.log("ACCEPT NONCE:", nonce);
 
-			return resp.json().then(function (reply) {
+      return resp.json().then(function (reply) {
         challengePollUrl = reply.url;
 
-				console.log('Challenge ACK:');
-				console.log(JSON.stringify(reply));
+        console.log('Challenge ACK:');
+        console.log(JSON.stringify(reply));
         return reply;
-			});
-		});
-	});
+      });
+    });
+  });
 };
 
 BACME.challenges.check = function (opts) {
-	return window.fetch(opts.challengePollUrl, { mode: 'cors' }).then(function (resp) {
+  return window.fetch(opts.challengePollUrl, { mode: 'cors' }).then(function (resp) {
     BACME._logHeaders(resp);
 
-		return resp.json().then(function (reply) {
-			challengePollUrl = reply.url;
+    return resp.json().then(function (reply) {
+      challengePollUrl = reply.url;
 
       BACME._logBody(reply);
 
-			return reply;
-		});
-	});
+      return reply;
+    });
+  });
 };
 
 var domainKeypair;
 var domainJwk;
 
+BACME.generateKeypair = function (opts) {
+  var wcOpts = {};
+
+  // ECDSA has only the P curves and an associated bitlength
+  if (/^EC/i.test(opts.type)) {
+    wcOpts.name = 'ECDSA';
+    if (/256/.test(opts.bitlength)) {
+      wcOpts.namedCurve = 'P-256';
+    }
+  }
+
+  // RSA-PSS is another option, but I don't think it's used for Let's Encrypt
+  // I think the hash is only necessary for signing, not generation or import
+  if (/^RS/i.test(opts.type)) {
+    wcOpts.name = 'RSASSA-PKCS1-v1_5';
+    wcOpts.modulusLength = opts.bitlength;
+    if (opts.bitlength < 2048) {
+      wcOpts.modulusLength = opts.bitlength * 8;
+    }
+    wcOpts.publicExponent = new Uint8Array([0x01, 0x00, 0x01]);
+    wcOpts.hash = { name: "SHA-256" };
+  }
+  var extractable = true;
+  return window.crypto.subtle.generateKey(
+    { name: "ECDSA", namedCurve: "P-256" }
+  , extractable
+  , [ 'sign', 'verify' ]
+  );
+};
 BACME.domains = {};
-// TODO factor out from BACME.accounts.generateKeypair
-BACME.domains.generateKeypair = function () {
-	var extractable = true;
-	return window.crypto.subtle.generateKey(
-		{ name: "ECDSA", namedCurve: "P-256" }
-	, extractable
-	, [ 'sign', 'verify' ]
-	).then(function (result) {
-		domainKeypair = result;
+// TODO factor out from BACME.accounts.generateKeypair even more
+BACME.domains.generateKeypair = function (opts) {
+  return BACME.generateKeypair(opts).then(function (result) {
+    domainKeypair = result;
 
-		return window.crypto.subtle.exportKey(
-			"jwk"
-		, result.privateKey
-		).then(function (jwk) {
+    return window.crypto.subtle.exportKey(
+      "jwk"
+    , result.privateKey
+    ).then(function (privJwk) {
 
-			domainJwk = jwk;
-			console.log('private jwk:');
-			console.log(JSON.stringify(jwk, null, 2));
+      domainJwk = privJwk;
+      console.log('private jwk:');
+      console.log(JSON.stringify(privJwk, null, 2));
 
-      return domainKeypair;
-		})
-	});
+      return privJwk;
+    });
+  });
 };
 
 // { serverJwk, domains }
@@ -607,41 +601,41 @@ var certificateUrl;
 
 // { csr, jwk, finalizeUrl, accountId }
 BACME.orders.finalize = function (opts) {
-	var payload64 = BACME._jsto64(
-		{ csr: opts.csr }
-	);
+  var payload64 = BACME._jsto64(
+    { csr: opts.csr }
+  );
 
   return BACME._importKey(opts.jwk).then(function (abstractKey) {
     var protected64 = BACME._jsto64(
       { nonce: nonce, alg: abstractKey.meta.alg/*'ES256'*/, url: opts.finalizeUrl, kid: opts.accountId }
     );
-		return BACME._sign({
+    return BACME._sign({
       abstractKey: abstractKey
     , payload64: payload64
     , protected64: protected64
     });
   }).then(function (signedFinal) {
 
-	  nonce = null;
-		return window.fetch(
-			opts.finalizeUrl
-		, { mode: 'cors'
-			, method: 'POST'
-			, headers: { 'Content-Type': 'application/jose+json' }
-			, body: JSON.stringify(signedFinal)
-			}
-		).then(function (resp) {
+    nonce = null;
+    return window.fetch(
+      opts.finalizeUrl
+    , { mode: 'cors'
+      , method: 'POST'
+      , headers: { 'Content-Type': 'application/jose+json' }
+      , body: JSON.stringify(signedFinal)
+      }
+    ).then(function (resp) {
       BACME._logHeaders(resp);
-			nonce = resp.headers.get('replay-nonce');
+      nonce = resp.headers.get('replay-nonce');
 
-			return resp.json().then(function (reply) {
-				certificateUrl = reply.certificate;
+      return resp.json().then(function (reply) {
+        certificateUrl = reply.certificate;
         BACME._logBody(reply);
 
         return reply;
-			});
-		});
-	});
+      });
+    });
+  });
 };
 
 BACME.orders.receive = function (opts) {
