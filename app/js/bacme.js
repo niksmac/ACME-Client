@@ -566,7 +566,7 @@ BACME.generateKeypair = function (opts) {
   }
   var extractable = true;
   return window.crypto.subtle.generateKey(
-    { name: "ECDSA", namedCurve: "P-256" }
+    wcOpts
   , extractable
   , [ 'sign', 'verify' ]
   );
