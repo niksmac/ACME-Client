@@ -1,6 +1,7 @@
 (function () {
 'use strict';
 
+  /*global URLSearchParams,Headers*/
   var BROWSER_SUPPORTS_ECDSA = navigator.userAgent.toLowerCase().indexOf('firefox') === -1;
   var $qs = function (s) { return window.document.querySelector(s); };
   var $qsa = function (s) { return window.document.querySelectorAll(s); };
@@ -9,10 +10,14 @@
   var nonce;
   var kid;
   var i = 1;
+  var BACME = window.BACME;
+  var PromiseA = window.Promise;
+  var crypto = window.crypto;
 
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
   function updateApiType() {
     console.log("type updated");
+    /*jshint validthis: true */
     var input = this || Array.prototype.filter.call(
       $qsa('.js-acme-api-type'), function ($el) { return $el.checked; }
     )[0];
@@ -43,13 +48,13 @@
         progressSteps[j].classList.remove("js-progress-step-complete");
         progressSteps[j].classList.remove("js-progress-step-started");
       }
-    };
+    }
   }
 
   function submitForm(ev) {
     var j = i;
     i += 1;
-    
+
     steps[j].submit(ev);
   }
 
@@ -61,6 +66,7 @@
   });
 
   function updateChallengeType() {
+    /*jshint validthis: true*/
     var input = this || Array.prototype.filter.call(
       $qsa('.js-acme-challenge-type'), function ($el) { return $el.checked; }
     )[0];
@@ -87,22 +93,11 @@
     , headers: new Headers({ 'Content-Type': 'application/json' })
     , body: JSON.stringify({
         address: email
-      , list: 'greenlock@ppl.family'
+      , list: 'web@greenlock.domains'
       , domain: domains.join(',')
       })
-    }).then(function (resp) {
-      return resp.json().then(function (data) {
-        /*
-        if (data.error) {
-          window.alert("Couldn't save your contact. Email coolaj86@gmail.com instead.");
-          return;
-        }
-        */
-      });
-    }).catch(function () {
-      /*
-      window.alert("Didn't get your contact. Bad network connection? Email coolaj86@gmail.com instead.");
-      */
+    }).catch(function (err) {
+      console.error(err);
     });
   }
 
@@ -155,17 +150,28 @@
     var p;
 
     function createKeypair() {
-      return BACME.accounts.generateKeypair({
-        type: 'ECDSA'
-      , bitlength: '256'
-      }).then(function (jwk) {
+      var opts;
+
+      if(BROWSER_SUPPORTS_ECDSA) {
+        opts = {
+          type: 'ECDSA'
+        , bitlength: '256'
+        };
+      } else {
+        opts = {
+          type: 'RSA'
+        , bitlength: '2048'
+        };
+      }
+
+      return BACME.accounts.generateKeypair(opts).then(function (jwk) {
         localStorage.setItem('account:' + email, JSON.stringify(jwk));
         return jwk;
-      })
+      });
     }
 
     if (jwk) {
-      p = Promise.resolve(jwk);
+      p = PromiseA.resolve(jwk);
     } else {
       p = createKeypair();
     }
@@ -196,11 +202,11 @@
     return p.then(function (_jwk) {
       jwk = _jwk;
       kid = JSON.parse(localStorage.getItem('account-kid:' + email) || 'null');
-      var p2
+      var p2;
 
       // TODO save account id rather than always retrieving it
       if (kid) {
-        p2 = Promise.resolve(kid);
+        p2 = PromiseA.resolve(kid);
       } else {
         p2 = createAccount(jwk);
       }
@@ -228,7 +234,7 @@
                   'http-01': '.js-acme-verification-http-01'
                 , 'dns-01': '.js-acme-verification-dns-01'
                 , 'wildcard': '.js-acme-verification-wildcard'
-                }
+                };
 
                 /*
                 var tpls = {};
@@ -241,9 +247,9 @@
                 */
 
                 // TODO make Promise-friendly
-                return Promise.all(claims.map(function (claim) {
+                return PromiseA.all(claims.map(function (claim) {
                   var hostname = claim.identifier.value;
-                  return Promise.all(claim.challenges.map(function (c) {
+                  return PromiseA.all(claim.challenges.map(function (c) {
                     var keyAuth = BACME.challenges['http-01']({
                       token: c.token
                     , thumbprint: thumbprint
@@ -374,10 +380,10 @@
       var allsWell = true;
 
       function checkPolls() {
-        return new Promise(function (resolve) {
+        return new PromiseA(function (resolve) {
           setTimeout(resolve, 1000);
         }).then(function () {
-          return Promise.all(polls.map(function (poll) {
+          return PromiseA.all(polls.map(function (poll) {
             return BACME.challenges.check({ challengePollUrl: poll.url });
           })).then(function (polls) {
             console.log(polls);
@@ -415,7 +421,7 @@
     updateProgress(1);
     hideForms();
     $qs('.js-acme-form-poll').hidden = false;
-  }
+  };
   steps[4].submit = function () {
     console.log('Congrats! Auto advancing...');
 
@@ -424,7 +430,7 @@
     var p;
 
     function createKeypair() {
-      let opts;
+      var opts;
 
       if(BROWSER_SUPPORTS_ECDSA) {
         opts = {
@@ -441,11 +447,11 @@
       return BACME.accounts.generateKeypair(opts).then(function (serverJwk) {
         localStorage.setItem('server:' + key, JSON.stringify(serverJwk));
         return serverJwk;
-      })
+      });
     }
 
     if (serverJwk) {
-      p = Promise.resolve(serverJwk);
+      p = PromiseA.resolve(serverJwk);
     } else {
       p = createKeypair();
     }
@@ -468,7 +474,7 @@
         });
       }).then(function () {
         function checkCert() {
-          return new Promise(function (resolve) {
+          return new PromiseA(function (resolve) {
             setTimeout(resolve, 1000);
           }).then(function () {
             return BACME.orders.check({ orderUrl: info.orderUrl });
@@ -535,7 +541,7 @@
           wcOpts = {
             name: "ECDSA"
           , namedCurve: "P-256"
-          }
+          };
         }
 				return crypto.subtle.importKey(
           "jwk"
@@ -559,10 +565,10 @@
   };
 
   steps[5] = function () {
-    updateProgress(2)
+    updateProgress(2);
     hideForms();
     $qs('.js-acme-form-download').hidden = false;
-  }
+  };
   steps[1]();
 
   var params = new URLSearchParams(window.location.search);
@@ -570,7 +576,7 @@
 
   if(params.has('acme-domains')) {
     console.log("acme-domains param: ", params.get('acme-domains'));
-    $qs('.js-acme-domains').value = params.get('acme-domains');     
+    $qs('.js-acme-domains').value = params.get('acme-domains');
 
     $qsa('.js-acme-api-type').forEach(function(ele) {
       if(ele.value === apiType) {
