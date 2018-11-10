@@ -34,9 +34,11 @@
   testEcdsaSupport().then(function () {
     console.log("supports ECDSA");
     BROWSER_SUPPORTS_ECDSA = true;
+    return true;
   }).catch(function () {
     console.log("DOES NOT supports ECDSA");
     BROWSER_SUPPORTS_ECDSA = false;
+    return false;
   });
   // TODO test RSA support
 
