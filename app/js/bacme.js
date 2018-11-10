@@ -38,13 +38,16 @@ BACME._logBody = function (body) {
 BACME.directory = function (opts) {
   return webFetch(opts.directoryUrl || directoryUrl, { mode: 'cors' }).then(function (resp) {
     BACME._logHeaders(resp);
-    return resp.json().then(function (body) {
-      directory = body;
+    return resp.json().then(function (reply) {
+      if (/error/.test(reply.type)) {
+        return Promise.reject(new Error(reply.detail || reply.type));
+      }
+      directory = reply;
       nonceUrl = directory.newNonce || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-nonce';
       accountUrl = directory.newAccount || 'https://acme-staging-v02.api.letsencrypt.org/acme/new-account';
       orderUrl = directory.newOrder || "https://acme-staging-v02.api.letsencrypt.org/acme/new-order";
-      BACME._logBody(body);
-      return body;
+      BACME._logBody(reply);
+      return reply;
     });
   });
 };
@@ -227,18 +230,30 @@ BACME.accounts.sign = function (opts) {
       payloadJson
     );
 
-    // TODO RSA
     var protectedJson =
       { nonce: opts.nonce
       , url: accountUrl
       , alg: abstractKey.meta.alg
-      , jwk: {
-          kty: opts.jwk.kty
-        , crv: opts.jwk.crv
-        , x: opts.jwk.x
-        , y: opts.jwk.y
-        }
+      , jwk: null
       };
+
+    if (/EC/i.test(opts.jwk.kty)) {
+      protectedJson.jwk = {
+        crv: opts.jwk.crv
+      , kty: opts.jwk.kty
+      , x: opts.jwk.x
+      , y: opts.jwk.y
+      };
+    } else if (/RS/i.test(opts.jwk.kty)) {
+      protectedJson.jwk = {
+        e: opts.jwk.e
+      , kty: opts.jwk.kty
+      , n: opts.jwk.n
+      };
+    } else {
+      return Promise.reject(new Error("[acme.accounts.sign] unsupported key type '" + opts.jwk.kty + "'"));
+    }
+
     console.log('protected:');
     console.log(protectedJson);
     var protected64 = BACME._jsto64(
@@ -486,9 +501,7 @@ var challengePollUrl;
 
 // { jwk, challengeUrl, accountId (kid) }
 BACME.challenges.accept = function (opts) {
-  var payload64 = BACME._jsto64(
-    {}
-  );
+  var payload64 = BACME._jsto64({});
 
   return BACME._importKey(opts.jwk).then(function (abstractKey) {
     var protected64 = BACME._jsto64(
@@ -530,6 +543,9 @@ BACME.challenges.check = function (opts) {
     BACME._logHeaders(resp);
 
     return resp.json().then(function (reply) {
+      if (/error/.test(reply.type)) {
+        return Promise.reject(new Error(reply.detail || reply.type));
+      }
       challengePollUrl = reply.url;
 
       BACME._logBody(reply);
@@ -630,6 +646,9 @@ BACME.orders.finalize = function (opts) {
       nonce = resp.headers.get('replay-nonce');
 
       return resp.json().then(function (reply) {
+        if (/error/.test(reply.type)) {
+          return Promise.reject(new Error(reply.detail || reply.type));
+        }
         certificateUrl = reply.certificate;
         BACME._logBody(reply);
 
@@ -667,6 +686,9 @@ BACME.orders.check = function (opts) {
     BACME._logHeaders(resp);
 
     return resp.json().then(function (reply) {
+      if (/error/.test(reply.type)) {
+        return Promise.reject(new Error(reply.detail || reply.type));
+      }
       BACME._logBody(reply);
 
       return reply;
