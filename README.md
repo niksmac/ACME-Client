@@ -6,7 +6,7 @@ Taking greenlock&trade; (Let's Encrypt v2 / ACME client) where it's never been b
 Official Site
 =============
 
-This app is available at <https://greenlock.ppl.family>.
+This app is available at <https://greenlock.domains>.
 
 We expect that our hosted version will meet all of yours needs.
 If it doesn't, please open an issue to let us know why.
