@@ -14,6 +14,32 @@
   var PromiseA = window.Promise;
   var crypto = window.crypto;
 
+  function testEcdsaSupport() {
+    var opts = {
+      type: 'ECDSA'
+    , bitlength: '256'
+    };
+    return BACME.accounts.generateKeypair(opts).then(function (jwk) {
+      return crypto.subtle.importKey(
+        "jwk"
+      , jwk
+      , { name: "ECDSA", namedCurve: "P-256" }
+      , true
+      , ["sign"]
+      ).then(function (privateKey) {
+        return window.crypto.subtle.exportKey("pkcs8", privateKey);
+      });
+    });
+  }
+  testEcdsaSupport().then(function () {
+    console.log("supports ECDSA");
+    BROWSER_SUPPORTS_ECDSA = true;
+  }).catch(function () {
+    console.log("DOES NOT supports ECDSA");
+    BROWSER_SUPPORTS_ECDSA = false;
+  });
+  // TODO test RSA support
+
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
   function updateApiType() {
     console.log("type updated");
@@ -497,36 +523,36 @@
           "data:text/octet-stream;base64," + window.btoa(certs);
 
         // https://stackoverflow.com/questions/40314257/export-webcrypto-key-to-pem-format
-				function spkiToPEM(keydata){
-						var keydataS = arrayBufferToString(keydata);
-						var keydataB64 = window.btoa(keydataS);
-						var keydataB64Pem = formatAsPem(keydataB64);
-						return keydataB64Pem;
-				}
+        function spkiToPEM(keydata){
+            var keydataS = arrayBufferToString(keydata);
+            var keydataB64 = window.btoa(keydataS);
+            var keydataB64Pem = formatAsPem(keydataB64);
+            return keydataB64Pem;
+        }
 
-				function arrayBufferToString( buffer ) {
-						var binary = '';
-						var bytes = new Uint8Array( buffer );
-						var len = bytes.byteLength;
-						for (var i = 0; i < len; i++) {
-								binary += String.fromCharCode( bytes[ i ] );
-						}
-						return binary;
-				}
+        function arrayBufferToString( buffer ) {
+            var binary = '';
+            var bytes = new Uint8Array( buffer );
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode( bytes[ i ] );
+            }
+            return binary;
+        }
 
 
-				function formatAsPem(str) {
-						var finalString = '-----BEGIN ' + pemName + ' PRIVATE KEY-----\n';
+        function formatAsPem(str) {
+            var finalString = '-----BEGIN ' + pemName + ' PRIVATE KEY-----\n';
 
-						while(str.length > 0) {
-								finalString += str.substring(0, 64) + '\n';
-								str = str.substring(64);
-						}
+            while(str.length > 0) {
+                finalString += str.substring(0, 64) + '\n';
+                str = str.substring(64);
+            }
 
-						finalString = finalString + '-----END ' + pemName + ' PRIVATE KEY-----';
+            finalString = finalString + '-----END ' + pemName + ' PRIVATE KEY-----';
 
-						return finalString;
-				}
+            return finalString;
+        }
 
         var wcOpts;
         var pemName;
@@ -543,23 +569,23 @@
           , namedCurve: "P-256"
           };
         }
-				return crypto.subtle.importKey(
+        return crypto.subtle.importKey(
           "jwk"
         , info.serverJwk
         , wcOpts
         , true
         , ["sign"]
-				).then(function (privateKey) {
+        ).then(function (privateKey) {
           return window.crypto.subtle.exportKey("pkcs8", privateKey);
-				}).then (function (keydata) {
-					var pem = spkiToPEM(keydata);
-					$qs('#js-privkey').innerHTML = pem;
+        }).then (function (keydata) {
+          var pem = spkiToPEM(keydata);
+          $qs('#js-privkey').innerHTML = pem;
           $qs("#js-download-privkey-link").href =
             "data:text/octet-stream;base64," + window.btoa(pem);
           steps[i]();
         }).catch(function(err){
           console.error(err.toString());
-				});
+        });
       });
     });
   };
