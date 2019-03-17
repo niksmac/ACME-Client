@@ -48,32 +48,37 @@
       });
     });
   }
-  testEcdsaSupport().then(function () {
-    console.info("[crypto] ECDSA is supported");
-    BROWSER_SUPPORTS_ECDSA = true;
-    localStorage.setItem('version', '1');
-    return true;
-  }).catch(function () {
-    console.warn("[crypto] ECDSA is NOT fully supported");
-    BROWSER_SUPPORTS_ECDSA = false;
+  function testKeypairSupport() {
+    return testEcdsaSupport().then(function () {
+      console.info("[crypto] ECDSA is supported");
+      BROWSER_SUPPORTS_ECDSA = true;
+      localStorage.setItem('version', '1');
+      return true;
+    }).catch(function () {
+      console.warn("[crypto] ECDSA is NOT fully supported");
+      BROWSER_SUPPORTS_ECDSA = false;
 
-    // fix previous firefox browsers
-    if (!localStorage.getItem('version')) {
-      localStorage.clear();
-      localStorage.getItem('version', '1');
+      // fix previous firefox browsers
+      if (!localStorage.getItem('version')) {
+        localStorage.clear();
+        localStorage.setItem('version', '1');
+      }
+
+      return false;
+    });
+  }
+  testKeypairSupport().then(function (ecdsaSupport) {
+    if (ecdsaSupport) {
+      return true;
     }
 
-    // DO NOT RETURN HERE
-    testRsaSupport().then(function () {
+    return testRsaSupport().then(function () {
       console.info('[crypto] RSA is supported');
     }).catch(function (err) {
       console.error('[crypto] could not use either EC nor RSA.');
       console.error(err);
       window.alert("Your browser is cryptography support (neither RSA or EC is usable). Please use Chrome, Firefox, or Safari.");
     });
-
-    // RETURN HERE
-    return false;
   });
 
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
@@ -238,7 +243,7 @@
     if (jwk) {
       p = PromiseA.resolve(jwk);
     } else {
-      p = createKeypair();
+      p = testKeypairSupport().then(createKeypair);
     }
 
     function createAccount(jwk) {
