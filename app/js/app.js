@@ -346,23 +346,27 @@
 
                       if (claim.wildcard) {
                         obj.wildcard.push(data);
+                        let verification = $qs(".js-acme-verification-wildcard");
+                        verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
+                        verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
+                        verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
 
-                        $qs(map.wildcard).innerHTML += '<tr><td>' + data.hostname + '</td><td>' + data.dnsHost + '</td><td>' + data.dnsAnswer + '</td></tr>';
                       } else if(obj[data.type]) {
 
                         obj[data.type].push(data);
 
                         if ('dns-01' === data.type) {
-                          $qs("#js-acme-ver-hostname").innerHTML = data.hostname;
-                          $qs("#js-acme-ver-txt-host").innerHTML = data.dnsHost;
-                          $qs("#js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
+                          let verification = $qs(".js-acme-verification-dns-01");
+                          verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
+                          verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
+                          verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
                         } else if ('http-01' === data.type) {
-                          $qs("#js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
-                          $qs("#js-acme-ver-content").innerHTML = data.httpAuth;
-                          $qs("#js-acme-ver-uri").innerHTML = data.httpPath;
-                          $qs("#js-download-verify-link").href =
+                          $qs(".js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
+                          $qs(".js-acme-ver-content").innerHTML = data.httpAuth;
+                          $qs(".js-acme-ver-uri").innerHTML = data.httpPath;
+                          $qs(".js-download-verify-link").href =
                             "data:text/octet-stream;base64," + window.btoa(data.httpAuth);
-                          $qs("#js-download-verify-link").download = data.httpPath.split("/").slice(-1);
+                          $qs(".js-download-verify-link").download = data.httpPath.split("/").slice(-1);
                         }
                       }
 
@@ -374,7 +378,7 @@
                   // hide wildcard if no wildcard
                   // hide http-01 and dns-01 if only wildcard
                   if (!obj.wildcard.length) {
-                    $qs('.js-acme-wildcard').hidden = true;
+                    $qs('.js-acme-wildcard-challenges').hidden = true;
                   }
                   if (!obj['http-01'].length) {
                     $qs('.js-acme-challenges').hidden = true;
