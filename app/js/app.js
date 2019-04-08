@@ -124,7 +124,7 @@
 
     return PromiseA.resolve(steps[j].submit(ev)).catch(function (err) {
       console.error(err);
-      window.alert.error("Something went wrong. It's our fault not yours. Please email aj@greenlock.domains and let him know that 'step " + j + "' failed.");
+      window.alert("Something went wrong. It's our fault not yours. Please email aj@rootprojects.org and let him know that 'step " + j + "' failed.");
     });
   }
 
@@ -403,7 +403,7 @@
     }).catch(function (err) {
       console.error('Step \'\' Error:');
       console.error(err, err.stack);
-      window.alert("An error happened at Step " + i + ", but it's not your fault. Email aj@greenlock.domains and let him know.");
+      window.alert("An error happened at Step " + i + ", but it's not your fault. Email aj@rootprojects.org and let him know.");
     });
   };
 
@@ -637,7 +637,7 @@
       });
     }).catch(function (err) {
       console.error(err.toString());
-      window.alert("An error happened in the final step, but it's not your fault. Email aj@greenlock.domains and let him know.");
+      window.alert("An error happened in the final step, but it's not your fault. Email aj@rootprojects.org and let him know.");
     });
   };
 
