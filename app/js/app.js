@@ -157,13 +157,13 @@
 
   function saveContact(email, domains) {
     // to be used for good, not evil
-    return window.fetch('https://api.rootprojects.org/api/rootprojects.org/public/list', {
+    return window.fetch('https://api.rootprojects.org/api/rootprojects.org/public/community', {
       method: 'POST'
     , cors: true
     , headers: new Headers({ 'Content-Type': 'application/json' })
     , body: JSON.stringify({
         address: email
-      , list: 'greenlock-domains@rootprojects.org'
+      , project: 'greenlock-domains@rootprojects.org'
       , domain: domains.join(',')
       })
     }).catch(function (err) {
