@@ -2,8 +2,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-;
-(function (exports) {
+;(function (exports) {
 
 var Enc = exports.Enc = {};
 
@@ -1962,7 +1961,12 @@ ACME._getChallenges = function (me, options, authUrl) {
   , payload: ''
   , url: authUrl
   }).then(function (resp) {
-    return resp.body;
+    // Pre-emptive rather than lazy for interfaces that need to show the challenges to the user first
+    return ACME._challengesToAuth(me, options, resp.body, false).then(function (auths) {
+      resp.body._rawChallenges = resp.body.challenges;
+      resp.body.challenges = auths;
+      return resp.body;
+    });
   });
 };
 ACME._wait = function wait(ms) {
@@ -1988,12 +1992,6 @@ ACME._testChallengeOptions = function () {
       "_wildcard": true
     }
   , {
-      "type": "tls-sni-01",
-      "status": "pending",
-      "url": "https://acme-staging-v02.example.com/2",
-      "token": "test-" + chToken + "-2"
-    }
-  , {
       "type": "tls-alpn-01",
       "status": "pending",
       "url": "https://acme-staging-v02.example.com/3",
@@ -2010,47 +2008,49 @@ ACME._testChallenges = function (me, options) {
       challenges = challenges.filter(function (ch) { return ch._wildcard; });
     }
 
-    var challenge = ACME._chooseChallenge(options, { challenges: challenges });
-    if (!challenge) {
-      // For example, wildcards require dns-01 and, if we don't have that, we have to bail
-      var enabled = Object.keys(options.challenges).join(', ') || 'none';
-      var suitable = challenges.map(function (r) { return r.type; }).join(', ') || 'none';
-      return Promise.reject(new Error(
-        "None of the challenge types that you've enabled ( " + enabled + " )"
-          + " are suitable for validating the domain you've selected (" + identifierValue + ")."
-          + " You must enable one of ( " + suitable + " )."
-      ));
-    }
-
-    // TODO remove skipChallengeTest
-    if (me.skipDryRun || me.skipChallengeTest) {
-      return null;
-    }
-
-    if ('dns-01' === challenge.type) {
-      // Give the nameservers a moment to propagate
-      CHECK_DELAY = 1.5 * 1000;
-    }
-
-    return Promise.resolve().then(function () {
-      var results = {
+    // The dry-run comes first in the spirit of "fail fast"
+    // (and protecting against challenge failure rate limits)
+    var dryrun = true;
+    var resp = {
+      body: {
         identifier: {
           type: "dns"
         , value: identifierValue.replace(/^\*\./, '')
         }
-      , challenges: [ challenge ]
+      , challenges: challenges
       , expires: new Date(Date.now() + (60 * 1000)).toISOString()
       , wildcard: identifierValue.includes('*.') || undefined
-      };
+      }
+    };
+    return ACME._challengesToAuth(me, options, resp.body, dryrun).then(function (auths) {
+      resp.body._rawChallenges = resp.body.challenges;
+      resp.body.challenges = auths;
 
-      // The dry-run comes first in the spirit of "fail fast"
-      // (and protecting against challenge failure rate limits)
-      var dryrun = true;
-      return ACME._challengeToAuth(me, options, results, challenge, dryrun).then(function (auth) {
-        if (!me._canUse[auth.type]) { return; }
-        return ACME._setChallenge(me, options, auth).then(function () {
-          return auth;
-        });
+      var auth = ACME._chooseAuth(options, resp.body.challenges);
+      if (!auth) {
+        // For example, wildcards require dns-01 and, if we don't have that, we have to bail
+        var enabled = Object.keys(options.challenges).join(', ') || 'none';
+        var suitable = resp.body.challenges.map(function (r) { return r.type; }).join(', ') || 'none';
+        return Promise.reject(new Error(
+          "None of the challenge types that you've enabled ( " + enabled + " )"
+            + " are suitable for validating the domain you've selected (" + identifierValue + ")."
+            + " You must enable one of ( " + suitable + " )."
+        ));
+      }
+
+      // TODO remove skipChallengeTest
+      if (me.skipDryRun || me.skipChallengeTest) {
+        return null;
+      }
+
+      if ('dns-01' === auth.type) {
+        // Give the nameservers a moment to propagate
+        CHECK_DELAY = 1.5 * 1000;
+      }
+
+      if (!me._canUse[auth.type]) { return; }
+      return ACME._setChallenge(me, options, auth).then(function () {
+        return auth;
       });
     });
   })).then(function (auths) {
@@ -2067,93 +2067,88 @@ ACME._testChallenges = function (me, options) {
     });
   });
 };
-ACME._chooseChallenge = function(options, results) {
+ACME._chooseAuth = function(options, auths) {
   // For each of the challenge types that we support
-  var challenge;
+  var auth;
   var challengeTypes = Object.keys(options.challenges);
   // ordered from most to least preferred
-  challengeTypes = [ 'tls-alpn-01', 'http-01', 'dns-01' ].filter(function (chType) {
+  challengeTypes = (options.challengePriority||[ 'tls-alpn-01', 'http-01', 'dns-01' ]).filter(function (chType) {
     return challengeTypes.includes(chType);
   });
 
-  /*
-  // Lot's of error checking to inform the user of mistakes
-  if (!(options.challengeTypes||[]).length) {
-    options.challengeTypes = Object.keys(options.challenges||{});
-  }
-  if (!options.challengeTypes.length) {
-    options.challengeTypes = [ options.challengeType ].filter(Boolean);
-  }
-  if (options.challengeType) {
-    options.challengeTypes.sort(function (a, b) {
-      if (a === options.challengeType) { return -1; }
-      if (b === options.challengeType) { return 1; }
-      return 0;
-    });
-    if (options.challengeType !== options.challengeTypes[0]) {
-      return Promise.reject(new Error("options.challengeType is '" + options.challengeType + "',"
-        + " which does not exist in the supplied types '" + options.challengeTypes.join(',') + "'"));
-    }
-  }
-  // TODO check that all challengeTypes are represented in challenges
-  if (!options.challengeTypes.length) {
-    return Promise.reject(new Error("options.challengeTypes (string array) must be specified"
-      + " (and in order of preferential priority)."));
-  }
-  */
   challengeTypes.some(function (chType) {
     // And for each of the challenge types that are allowed
-    return results.challenges.some(function (ch) {
+    return auths.some(function (ch) {
       // Check to see if there are any matches
       if (ch.type === chType) {
-        challenge = ch;
+        auth = ch;
         return true;
       }
     });
   });
 
-  return challenge;
+  return auth;
 };
-ACME._challengeToAuth = function (me, options, request, challenge, dryrun) {
+ACME._challengesToAuth = function (me, options, request, dryrun) {
   // we don't poison the dns cache with our dummy request
   var dnsPrefix = ACME.challengePrefixes['dns-01'];
   if (dryrun) {
     dnsPrefix = dnsPrefix.replace('acme-challenge', 'greenlock-dryrun-' + ACME._prnd(4));
   }
+  var challengeTypes = Object.keys(options.challenges);
 
-  var auth = {};
-
-  // straight copy from the new order response
-  // { identifier, status, expires, challenges, wildcard }
-  Object.keys(request).forEach(function (key) {
-    auth[key] = request[key];
-  });
-
-  // copy from the challenge we've chosen
-  // { type, status, url, token }
-  // (note the duplicate status overwrites the one above, but they should be the same)
-  Object.keys(challenge).forEach(function (key) {
-    // don't confused devs with the id url
-    auth[key] = challenge[key];
-  });
-
-  // batteries-included helpers
-  auth.hostname = auth.identifier.value;
-  // because I'm not 100% clear if the wildcard identifier does or doesn't have the leading *. in all cases
-  auth.altname = ACME._untame(auth.identifier.value, auth.wildcard);
   return ACME._importKeypair(me, options.accountKeypair).then(function (pair) {
     return me.Keypairs.thumbprint({ jwk: pair.public }).then(function (thumb) {
-      auth.thumbprint = thumb;
-      //   keyAuthorization = token || '.' || base64url(JWK_Thumbprint(accountKey))
-      auth.keyAuthorization = challenge.token + '.' + auth.thumbprint;
-      // conflicts with ACME challenge id url is already in use, so we call this challengeUrl instead
-      // TODO auth.http01Url ?
-      auth.challengeUrl = 'http://' + auth.identifier.value + ACME.challengePrefixes['http-01'] + '/' + auth.token;
-      auth.dnsHost = dnsPrefix + '.' + auth.hostname.replace('*.', '');
+      return Promise.all(request.challenges.map(function (challenge) {
+        // Don't do extra work for challenges that we can't satisfy
+        if (!challengeTypes.includes(challenge.type)) {
+          return null;
+        }
 
-      return Crypto._sha('sha256', auth.keyAuthorization).then(function (hash) {
-        auth.dnsAuthorization = hash;
-        return auth;
+        var auth = {};
+
+        // straight copy from the new order response
+        // { identifier, status, expires, challenges, wildcard }
+        Object.keys(request).forEach(function (key) {
+          auth[key] = request[key];
+        });
+
+        // copy from the challenge we've chosen
+        // { type, status, url, token }
+        // (note the duplicate status overwrites the one above, but they should be the same)
+        Object.keys(challenge).forEach(function (key) {
+          // don't confused devs with the id url
+          auth[key] = challenge[key];
+        });
+
+        // batteries-included helpers
+        auth.hostname = auth.identifier.value;
+        // because I'm not 100% clear if the wildcard identifier does or doesn't have the leading *. in all cases
+        auth.altname = ACME._untame(auth.identifier.value, auth.wildcard);
+
+        auth.thumbprint = thumb;
+        //   keyAuthorization = token || '.' || base64url(JWK_Thumbprint(accountKey))
+        auth.keyAuthorization = challenge.token + '.' + auth.thumbprint;
+
+        if ('http-01' === auth.type) {
+          // conflicts with ACME challenge id url is already in use, so we call this challengeUrl instead
+          // TODO auth.http01Url ?
+          auth.challengeUrl = 'http://' + auth.identifier.value + ACME.challengePrefixes['http-01'] + '/' + auth.token;
+          return auth;
+        }
+
+        if ('dns-01' !== auth.type) {
+          return auth;
+        }
+
+        return Crypto._sha('sha256', auth.keyAuthorization).then(function (hash) {
+          auth.dnsHost = dnsPrefix + '.' + auth.hostname.replace('*.', '');
+          auth.dnsAuthorization = hash;
+          auth.keyAuthorizationDigest = hash;
+          return auth;
+        });
+      })).then(function (auths) {
+        return auths.filter(Boolean);
       });
     });
   });
@@ -2241,18 +2236,21 @@ ACME._postChallenge = function (me, options, auth) {
         return resp.body;
       }
 
-      var errmsg;
-      if (!resp.body.status) {
-        errmsg = "[acme-v2] (E_STATE_EMPTY) empty challenge state for '" + altname + "':";
-      }
-      else if ('invalid' === resp.body.status) {
-        errmsg = "[acme-v2] (E_STATE_INVALID) challenge state for '" + altname + "': '" + resp.body.status + "'";
-      }
-      else {
-        errmsg = "[acme-v2] (E_STATE_UKN) challenge state for '" + altname + "': '" + resp.body.status + "'";
+      var err;
+      if (resp.body.error && resp.body.error.detail) {
+        err = new Error("[acme-v2] " + auth.altname + " state:" + resp.body.status + " " + resp.body.error.detail);
+        err.auth = auth;
+        err.altname = auth.altname;
+        err.type = auth.type;
+        err.urn = resp.body.error.type;
+        err.code = ('invalid' === resp.body.status) ? 'E_CHALLENGE_INVALID' : 'E_CHALLENGE_UNKNOWN';
+        err.uri = resp.body.url;
+      } else {
+        err = new Error("[acme-v2] " + auth.altname + " (E_STATE_UKN): " + JSON.stringify(resp.body, null, 2));
+        err.code = 'E_CHALLENGE_UNKNOWN';
       }
 
-      return Promise.reject(new Error(errmsg));
+      return Promise.reject(err);
     });
   }
 
@@ -2312,34 +2310,32 @@ ACME._setChallenge = function (me, options, auth) {
 ACME._setChallengesAll = function (me, options) {
   var order = options.order;
   var setAuths = order.authorizations.slice(0);
-  var challenges = order.challenges;
+  var claims = order.claims.slice(0);
   var validAuths = [];
   var auths = [];
 
   function setNext() {
     var authUrl = setAuths.shift();
-    var results = challenges.shift();
+    var claim = claims.shift();
     if (!authUrl) { return; }
 
-    // var domain = options.domains[i]; // results.identifier.value
+    // var domain = options.domains[i]; // claim.identifier.value
 
     // If it's already valid, we're golden it regardless
-    if (results.challenges.some(function (ch) { return 'valid' === ch.status; })) {
+    if (claim.challenges.some(function (ch) { return 'valid' === ch.status; })) {
       return setNext();
     }
 
-    var challenge = ACME._chooseChallenge(options, results);
-    if (!challenge) {
+    var auth = ACME._chooseAuth(options, claim.challenges);
+    if (!auth) {
       // For example, wildcards require dns-01 and, if we don't have that, we have to bail
       return Promise.reject(new Error(
         "Server didn't offer any challenge we can handle for '" + options.domains.join() + "'."
       ));
     }
 
-    return ACME._challengeToAuth(me, options, results, challenge, false).then(function (auth) {
-      auths.push(auth);
-      return ACME._setChallenge(me, options, auth).then(setNext);
-    });
+    auths.push(auth);
+    return ACME._setChallenge(me, options, auth).then(setNext);
   }
 
   function checkNext() {
@@ -2358,6 +2354,7 @@ ACME._setChallengesAll = function (me, options) {
     }).then(checkNext);
   }
 
+  // Actually sets the challenge via ACME
   function challengeNext() {
     var auth = validAuths.shift();
     if (!auth) { return; }
@@ -2519,7 +2516,7 @@ ACME._createOrder = function (me, options) {
       if (me.debug) { console.debug('[ordered]', location); } // the account id url
       if (me.debug) { console.debug(resp); }
 
-      if (!options.authorizations) {
+      if (!order.authorizations) {
         return Promise.reject(new Error(
           "[acme-v2.js] authorizations were not fetched for '" + options.domains.join() + "':\n"
           + JSON.stringify(resp.body)
@@ -2528,25 +2525,24 @@ ACME._createOrder = function (me, options) {
 
       return order;
     }).then(function (order) {
-      var challenges = [];
+      var claims = [];
       if (me.debug) { console.debug("[acme-v2] POST newOrder has authorizations"); }
       var challengeAuths = order.authorizations.slice(0);
 
       function getNext() {
         var authUrl = challengeAuths.shift();
-        if (!authUrl) { return challenges; }
+        if (!authUrl) { return claims; }
 
-        return ACME._getChallenges(me, options, authUrl).then(function (results) {
-          // var domain = options.domains[i]; // results.identifier.value
-          challenges.push(results);
+        return ACME._getChallenges(me, options, authUrl).then(function (claim) {
+          // var domain = options.domains[i]; // claim.identifier.value
+          claims.push(claim);
           return getNext();
         });
       }
 
       return getNext().then(function () {
-        order.challenges = challenges;
+        order.claims = claims;
         options.order = order;
-        console.log('DEBUG 2 order (too much info for challenges?):', order);
         return order;
       });
     });
@@ -2684,10 +2680,12 @@ ACME.create = function create(me) {
     }
   };
   me.orders = {
-    create: function (options) {
+    // create + get challlenges
+    request: function (options) {
       return ACME._createOrder(me, options);
     }
-  , finalize: function (options) {
+    // set challenges, check challenges, finalize order, return order
+  , complete: function (options) {
       return ACME._finalizeOrder(me, options);
     }
   };

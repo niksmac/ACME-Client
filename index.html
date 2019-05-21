@@ -23,15 +23,10 @@
     </style>
     <link rel="preload" href="./app/fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2" as="font" crossorigin="anonymous">
     <link rel="preload" href="./app/fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2" as="font" crossorigin="anonymous">
-
     <link rel="prefetch" href="./app/fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2" as="font" crossorigin="anonymous">
-    <link rel="prefetch" href="./app/js/app.js">
-    <link rel="prefetch" href="./app/js/bacme.js">
-    <link rel="prefetch" href="./app/js/pkijs.org/v1.3.33/common.js">
-    <link rel="prefetch" href="./app/js/pkijs.org/v1.3.33/asn1.js">
-    <link rel="prefetch" href="./app/js/pkijs.org/v1.3.33/x509_schema.js">
-    <link rel="prefetch" href="./app/js/pkijs.org/v1.3.33/x509_simpl.js">
-    <link rel="prefetch" href="./app/js/browser-csr/v1.0.0-alpha/csr.js">
+    <link rel="prefetch" href="./app/js/bluecrypt-acme.js" as="script">
+    <link rel="prefetch" href="./app/js/greenlock.js" as="script">
+    <link rel="prefetch" href="./js/app.js" as="script">
   </head>
   <body class="js-app-ready">
     <script>
@@ -47,7 +42,8 @@
       </div>
       <div class="column-row">
         <div class="js-javascript-warning">
-          Greenlock will process the CSR in the browser and request the certificates directly from letsencrypt.org.  Please enable Javascript before continuing.
+          Greenlock will process the CSR in the browser and request the certificates directly from letsencrypt.org.
+          Please enable Javascript before continuing.
         </div>
         <form id="js-acme-form" action="./app/" method=>
           <div class="domain-psuedo-input">

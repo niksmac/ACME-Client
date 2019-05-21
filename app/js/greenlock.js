@@ -2,6 +2,7 @@
 'use strict';
 
   /*global URLSearchParams,Headers*/
+  var PromiseA = window.Promise;
   var VERSION = '2';
 	// ACME recommends ECDSA P-256, but RSA 2048 is still required by some old servers (like what replicated.io uses )
 	// ECDSA P-384, P-521, and RSA 3072, 4096 are NOT recommend standards (and not properly supported)
@@ -15,11 +16,32 @@
   var $qs = function (s) { return window.document.querySelector(s); };
   var $qsa = function (s) { return window.document.querySelectorAll(s); };
 	var acme;
-	var accountStuff;
   var info = {};
   var steps = {};
   var i = 1;
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
+  var challenges = {
+    'http-01': {
+      set: function (auth) {
+        console.log('Chose http-01 for', auth.altname, auth);
+        return Promise.resolve();
+      }
+    , remove: function (auth) {
+        console.log('Can remove http-01 for', auth.altname, auth);
+        return Promise.resolve();
+      }
+    }
+  , 'dns-01': {
+      set: function (auth) {
+        console.log('Chose dns-01 for', auth.altname, auth);
+        return Promise.resolve();
+      }
+    , remove: function (auth) {
+        console.log('Can remove dns-01 for', auth.altname, auth);
+        return Promise.resolve();
+      }
+    }
+  };
 
   function updateApiType() {
     console.log("type updated");
@@ -59,8 +81,29 @@
     i += 1;
 
     return PromiseA.resolve(steps[j].submit(ev)).catch(function (err) {
+      var ourfault = true;
       console.error(err);
-      window.alert("Something went wrong. It's our fault not yours. Please email aj@rootprojects.org and let him know that 'step " + j + "' failed.");
+      console.error(Object.keys(err));
+      if ('E_CHALLENGE_INVALID' === err.code) {
+        if ('dns-01' === err.type) {
+          ourfault = false;
+          window.alert("It looks like the DNS record you set for "
+            + err.altname + " was incorrect or did not propagate. "
+            + "The error message was '" + err.message + "'");
+        } else if ('http-01' === err.type) {
+          ourfault = false;
+          window.alert("It looks like the file you uploaded for "
+            + err.altname + " was incorrect or could not be downloaded. "
+            + "The error message was '" + err.message + "'");
+        }
+      }
+
+      if (ourfault) {
+        err.auth = undefined;
+        window.alert("Something went wrong. It's probably our fault, not yours."
+          + " Please email aj@rootprojects.org to let him know. The error message is: \n"
+          + JSON.stringify(err, null, 2));
+      }
     });
   }
 
@@ -178,7 +221,8 @@
     $qs('.js-acme-form-domains').hidden = false;
   };
   steps[1].submit = function () {
-    info.identifiers = $qs('.js-acme-domains').value.split(/\s*,\s*/g).map(function (hostname) {
+    info.domains = $qs('.js-acme-domains').value.replace(/https?:\/\//g, ' ').replace(/,/g, ' ').trim().split(/\s+/g);
+    info.identifiers = info.domains.map(function (hostname) {
       return { type: 'dns', value: hostname.toLowerCase().trim() };
     }).slice(0,1); //Disable multiple values for now.  We'll just take the first and work with it.
     info.identifiers.sort(function (a, b) {
@@ -204,12 +248,14 @@
   steps[2].submit = function () {
     var email = $qs('.js-acme-account-email').value.toLowerCase().trim();
 
+    info.email = email;
     info.contact = [ 'mailto:' + email ];
     info.agree = $qs('.js-acme-account-tos').checked;
     //info.greenlockAgree = $qs('.js-gl-tos').checked;
+    info.domains = info.identifiers.map(function (ident) { return ident.value; });
 
     // TODO ping with version and account creation
-    setTimeout(saveContact, 100, email, info.identifiers.map(function (ident) { return ident.value; }));
+    setTimeout(saveContact, 100, email, info.domains);
 
 		function checkTos(tos) {
 			if (info.agree) {
@@ -227,10 +273,10 @@
 			, accountKeypair: { privateKeyJwk: jwk }
 			}).then(function (account) {
 				console.log("account created result:", account);
-				accountStuff.account = account;
-				accountStuff.privateJwk = jwk;
-				accountStuff.email = email;
-				accountStuff.acme = acme; // TODO XXX remove
+				info.account = account;
+				info.privateJwk = jwk;
+				info.email = email;
+				info.acme = acme; // TODO XXX remove
 			}).catch(function (err) {
 				console.error("A bad thing happened:");
 				console.error(err);
@@ -241,116 +287,104 @@
 				});
 			});
 		}).then(function () {
-      var jwk = accountStuff.privateJwk;
-      var account = accountStuff.account;
+      var jwk = info.privateJwk;
+      var account = info.account;
 
-			return acme.orders.create({
+			return acme.orders.request({
 			  account: account
 			, accountKeypair: { privateKeyJwk: jwk }
-			, identifiers: info.identifiers
+			, domains: info.domains
+      , challenges: challenges
 			}).then(function (order) {
-				return acme.orders.create({
-					signedOrder: signedOrder
-				}).then(function (order) {
-					accountStuff.order = order;
-          var claims = order.challenges;
-          console.log('claims:');
-          console.log(claims);
+        info.order = order;
 
-          var obj = { 'dns-01': [], 'http-01': [], 'wildcard': [] };
-          info.challenges = obj;
-          var map = {
-            'http-01': '.js-acme-verification-http-01'
-          , 'dns-01': '.js-acme-verification-dns-01'
-          , 'wildcard': '.js-acme-verification-wildcard'
-          };
-          options.challengePriority = [ 'http-01', 'dns-01' ];
+        var claims = order.claims;
+        console.log('claims:');
+        console.log(claims);
 
-          // TODO make Promise-friendly
-          return PromiseA.all(claims.map(function (claim) {
-            var hostname = claim.identifier.value;
-            return PromiseA.all(claim.challenges.map(function (c) {
-              var keyAuth = BACME.challenges['http-01']({
-                token: c.token
-              , thumbprint: thumbprint
-              , challengeDomain: hostname
-              });
-              return BACME.challenges['dns-01']({
-                keyAuth: keyAuth.value
-              , challengeDomain: hostname
-              }).then(function (dnsAuth) {
-                var data = {
-                  type: c.type
-                , hostname: hostname
-                , url: c.url
-                , token: c.token
-                , keyAuthorization: keyAuth
-                , httpPath: keyAuth.path
-                , httpAuth: keyAuth.value
-                , dnsType: dnsAuth.type
-                , dnsHost: dnsAuth.host
-                , dnsAnswer: dnsAuth.answer
-                };
+        var obj = { 'dns-01': [], 'http-01': [], 'wildcard': [] };
+        info.challenges = obj;
+        /*
+        var map = {
+          'http-01': '.js-acme-verification-http-01'
+        , 'dns-01': '.js-acme-verification-dns-01'
+        , 'wildcard': '.js-acme-verification-wildcard'
+        };
+        */
 
-                console.log('');
-                console.log('CHALLENGE');
-                console.log(claim);
-                console.log(c);
-                console.log(data);
-                console.log('');
+        claims.forEach(function (claim) {
+          console.log("Challenge (claim):");
+          console.log(claim);
+          var hostname = claim.identifier.value;
+          claim.challenges.forEach(function (c) {
+            var auth = c;
+            var data = {
+              type: c.type
+            , hostname: hostname
+            , url: c.url
+            , token: c.token
+            , httpPath: auth.challengeUrl
+            , httpAuth: auth.keyAuthorization
+            , dnsType: 'TXT'
+            , dnsHost: auth.dnsHost
+            , dnsAnswer: auth.keyAuthorizationDigest
+            };
 
-                if (claim.wildcard) {
-                  obj.wildcard.push(data);
-                  let verification = $qs(".js-acme-verification-wildcard");
-                  verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
-                  verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
-                  verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
+            console.log('');
+            console.log('CHALLENGE');
+            console.log(claim);
+            console.log(c);
+            console.log(data);
+            console.log('');
 
-                } else if(obj[data.type]) {
+            var verification;
+            if (claim.wildcard) {
+              obj.wildcard.push(data);
+              verification = $qs(".js-acme-verification-wildcard");
+              verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
+              verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
+              verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
 
-                  obj[data.type].push(data);
+            } else if(obj[data.type]) {
 
-                  if ('dns-01' === data.type) {
-                    let verification = $qs(".js-acme-verification-dns-01");
-                    verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
-                    verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
-                    verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
-                  } else if ('http-01' === data.type) {
-                    $qs(".js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
-                    $qs(".js-acme-ver-content").innerHTML = data.httpAuth;
-                    $qs(".js-acme-ver-uri").innerHTML = data.httpPath;
-                    $qs(".js-download-verify-link").href =
-                      "data:text/octet-stream;base64," + window.btoa(data.httpAuth);
-                    $qs(".js-download-verify-link").download = data.httpPath.split("/").slice(-1);
-                  }
-                }
+              obj[data.type].push(data);
 
-              });
-
-            }));
-          })).then(function () {
-
-            // hide wildcard if no wildcard
-            // hide http-01 and dns-01 if only wildcard
-            if (!obj.wildcard.length) {
-              $qs('.js-acme-wildcard-challenges').hidden = true;
+              if ('dns-01' === data.type) {
+                verification = $qs(".js-acme-verification-dns-01");
+                verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
+                verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
+                verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
+              } else if ('http-01' === data.type) {
+                $qs(".js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
+                $qs(".js-acme-ver-content").innerHTML = data.httpAuth;
+                $qs(".js-acme-ver-uri").innerHTML = data.httpPath;
+                $qs(".js-download-verify-link").href =
+                  "data:text/octet-stream;base64," + window.btoa(data.httpAuth);
+                $qs(".js-download-verify-link").download = data.httpPath.split("/").slice(-1);
+              }
             }
-            if (!obj['http-01'].length) {
-              $qs('.js-acme-challenges').hidden = true;
-            }
-
-            updateChallengeType();
-
-            console.log("MAGIC STEP NUMBER in 2 is:", i);
-            steps[i]();
           });
-
         });
+
+        // hide wildcard if no wildcard
+        // hide http-01 and dns-01 if only wildcard
+        if (!obj.wildcard.length) {
+          $qs('.js-acme-wildcard-challenges').hidden = true;
+        }
+        if (!obj['http-01'].length) {
+          $qs('.js-acme-challenges').hidden = true;
+        }
+
+        updateChallengeType();
+
+        console.log("MAGIC STEP NUMBER in 2 is:", i);
+        steps[i]();
       });
     }).catch(function (err) {
       console.error('Step \'\' Error:');
       console.error(err, err.stack);
-      window.alert("An error happened at Step " + i + ", but it's not your fault. Email aj@rootprojects.org and let him know.");
+      window.alert("An error happened (but it's not your fault)."
+        + " Email aj@rootprojects.org to let him know that 'order and get challenges' failed.");
     });
   };
 
@@ -360,58 +394,44 @@
     $qs('.js-acme-form-challenges').hidden = false;
   };
   steps[3].submit = function () {
-    options.challengeTypes = [ 'dns-01' ];
+    var challengePriority = [ 'dns-01' ];
     if ('http-01' === $qs('.js-acme-challenge-type:checked').value) {
-      options.challengeTypes.unshift('http-01');
+      challengePriority.unshift('http-01');
     }
-    console.log('primary challenge type is:', options.challengeTypes[0]);
+    console.log('primary challenge type is:', challengePriority[0]);
 
-    return getAccountKeypair(email).then(function (jwk) {
+    steps[i]();
+    return getAccountKeypair(info.email).then(function (jwk) {
       // for now just show the next page immediately (its a spinner)
       // TODO put a test challenge in the list
       // TODO warn about wait-time if DNS
-      steps[i]();
-		  return getServerKeypair().then(function () {
-        return acme.orders.finalize({
-          account: accountStuff.account
+		  return getServerKeypair().then(function (serverJwk) {
+        return acme.orders.complete({
+          account: info.account
         , accountKeypair: { privateKeyJwk: jwk }
-        , order: accountStuff.order
-        , domainKeypair: 'TODO'
-        });
-      }).then(function (certs) {
-        console.log('WINNING!');
-        console.log(certs);
-        $qs('#js-fullchain').innerHTML = certs;
-        $qs("#js-download-fullchain-link").href =
-          "data:text/octet-stream;base64," + window.btoa(certs);
+        , order: info.order
+        , domains: info.domains
+        , domainKeypair: { privateKeyJwk: serverJwk }
+        , challengePriority: challengePriority
+        , challenges: challenges
+        }).then(function (certs) {
+          return Keypairs.export({ jwk: serverJwk }).then(function (keyPem) {
+            console.log('WINNING!');
+            console.log(certs);
+            $qs('#js-fullchain').innerHTML = [
+              certs.cert.trim() + "\n"
+            , certs.chain + "\n"
+            ].join("\n");
+            $qs("#js-download-fullchain-link").href =
+              "data:text/octet-stream;base64," + window.btoa(certs);
 
-        var wcOpts;
-        var pemName;
-        if (/^R/.test(info.serverJwk.kty)) {
-          pemName = 'RSA';
-          wcOpts = { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } };
-        } else {
-          pemName = 'EC';
-          wcOpts = { name: "ECDSA", namedCurve: "P-256" };
-        }
-        return crypto.subtle.importKey(
-          "jwk"
-        , info.serverJwk
-        , wcOpts
-        , true
-        , ["sign"]
-        ).then(function (privateKey) {
-          return window.crypto.subtle.exportKey("pkcs8", privateKey);
-        }).then (function (keydata) {
-          var pem = spkiToPEM(keydata, pemName);
-          $qs('#js-privkey').innerHTML = pem;
-          $qs("#js-download-privkey-link").href =
-            "data:text/octet-stream;base64," + window.btoa(pem);
-          steps[i]();
+            $qs('#js-privkey').innerHTML = keyPem;
+            $qs("#js-download-privkey-link").href =
+              "data:text/octet-stream;base64," + window.btoa(keyPem);
+            submitForm();
+          });
         });
       });
-    }).then(function () {
-      return submitForm();
     });
   };
 
@@ -424,11 +444,7 @@
   steps[4].submit = function () {
     console.log('Congrats! Auto advancing...');
 
-
-    }).catch(function (err) {
-      console.error(err.toString());
-      window.alert("An error happened in the final step, but it's not your fault. Email aj@rootprojects.org and let him know.");
-    });
+    window.alert("An error happened in the final step, but it's not your fault. Email aj@rootprojects.org and let him know.");
   };
 
   steps[5] = function () {
@@ -436,6 +452,8 @@
     hideForms();
     $qs('.js-acme-form-download').hidden = false;
   };
+
+  // The kickoff
   steps[1]();
 
   var params = new URLSearchParams(window.location.search);
@@ -481,8 +499,8 @@
       return true;
     }
 
-    return testRsaSupport().then(function () {
-      console.info('[crypto] RSA is supported');
+    return testEcdsaSupport().then(function () {
+      console.info('[crypto] ECDSA is supported');
     }).catch(function (err) {
       console.error('[crypto] could not use either RSA nor EC.');
       console.error(err);
