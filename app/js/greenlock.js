@@ -444,7 +444,7 @@
   steps[4].submit = function () {
     console.log('Congrats! Auto advancing...');
 
-    window.alert("An error happened in the final step, but it's not your fault. Email aj@rootprojects.org and let him know.");
+    steps[i]();
   };
 
   steps[5] = function () {

@@ -2317,7 +2317,7 @@ ACME._setChallengesAll = function (me, options) {
   function setNext() {
     var authUrl = setAuths.shift();
     var claim = claims.shift();
-    if (!authUrl) { return; }
+    if (!authUrl) { return Promise.resolve(); }
 
     // var domain = options.domains[i]; // claim.identifier.value
 
@@ -2390,7 +2390,7 @@ ACME._finalizeOrder = function (me, options) {
           if (me.debug) { console.debug('[acme-v2.js] pollCert:'); }
           return ACME._jwsRequest(me, {
             options: options
-          , url: options.order.finalize
+          , url: options.order.finalizeUrl
           , protected: { kid: options._kid }
           , payload: Enc.binToBuf(payload)
           }).then(function (resp) {
