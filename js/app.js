@@ -2,11 +2,11 @@
 'use strict';
 
   var $qs = function (s) { return window.document.querySelector(s); };
-  var $qsa = function (s) { return window.document.querySelectorAll(s); };
 
   $qs('.js-javascript-warning').hidden = true;
 
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
+
   function updateApiType() {
     var formData = new FormData($qs("#js-acme-form"));
 
@@ -15,13 +15,15 @@
     var value = formData.get("acme-api-type");
     $qs('#js-acme-api-url').value = apiUrl.replace(/{{env}}/g, value);
   }
+
   $qs('#js-acme-form').addEventListener('change', updateApiType);
+  //$qs('#js-acme-form').addEventListener('submit', prettyRedirect);
 
   updateApiType();
   try {
     document.fonts.load().then(function() {
       $qs('body').classList.add("js-app-ready");
-    }).catch(function(error) {
+    }).catch(function(e) {
       $qs('body').classList.add("js-app-ready");
     });
   } catch(e) {

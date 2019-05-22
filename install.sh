@@ -1,5 +1,11 @@
 #!/bin/bash
 
+mkdir -p app/js/
+pushd app/js/
+  wget -c https://rootprojects.org/acme/bluecrypt-acme.js
+  wget -c https://rootprojects.org/acme/bluecrypt-acme.min.js
+popd
+
 mkdir -p app/js/pkijs.org/v1.3.33/
 pushd app/js/pkijs.org/v1.3.33/
   wget -c https://raw.githubusercontent.com/PeculiarVentures/PKI.js/41b63af760cacb565dd850fb3466ada4ca163eff/org/pkijs/common.js

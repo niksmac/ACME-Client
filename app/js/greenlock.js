@@ -20,6 +20,15 @@
   var steps = {};
   var i = 1;
   var apiUrl = 'https://acme-{{env}}.api.letsencrypt.org/directory';
+
+  // fix previous browsers
+  var isCurrent = (localStorage.getItem('version') === VERSION);
+  if (!isCurrent) {
+    localStorage.clear();
+    localStorage.setItem('version', VERSION);
+  }
+  localStorage.setItem('version', VERSION);
+
   var challenges = {
     'http-01': {
       set: function (auth) {
@@ -120,13 +129,6 @@
 		return Keypairs.generate(RSA_OPTS);
   }
   function testKeypairSupport() {
-		// fix previous browsers
-		var isCurrent = (localStorage.getItem('version') === VERSION);
-		if (!isCurrent) {
-			localStorage.clear();
-			localStorage.setItem('version', VERSION);
-		}
-		localStorage.setItem('version', VERSION);
 
     return testRsaSupport().then(function () {
       console.info("[crypto] RSA is supported");
@@ -221,7 +223,7 @@
     $qs('.js-acme-form-domains').hidden = false;
   };
   steps[1].submit = function () {
-    info.domains = $qs('.js-acme-domains').value.replace(/https?:\/\//g, ' ').replace(/,/g, ' ').trim().split(/\s+/g);
+    info.domains = $qs('.js-acme-domains').value.replace(/https?:\/\//g, ' ').replace(/[,+]/g, ' ').trim().split(/\s+/g);
     info.identifiers = info.domains.map(function (hostname) {
       return { type: 'dns', value: hostname.toLowerCase().trim() };
     }).slice(0,1); //Disable multiple values for now.  We'll just take the first and work with it.
