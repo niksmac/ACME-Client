@@ -165,71 +165,72 @@
 
           <h1>Let's verify your domain</h1>
           <div class="js-acme-challenges">
-          <div class="tabbed-selector">
-            <label>
-              <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
-              File Upload
-              <div></div>
-            </label>
-            <label>
-              <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
-              DNS Record
-              <div></div>
-            </label>
-          </div>
-          <div>
-            <div class="js-acme-verification-http-01">
-              <h3>Upload each file</h3>
-              <div class="js-acme-http">
-                <div class="http-verification-info file-preview">
-                  <div class="paper-fold"></div>
-                  <div>
-                    <div class="file-ver-info-header">FILENAME</div>
-                    <pre class="js-acme-ver-file-location">...loading</pre>
+            <div class="tabbed-selector">
+              <label>
+                <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
+                File Upload
+                <div></div>
+              </label>
+              <label>
+                <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
+                DNS Record
+                <div></div>
+              </label>
+            </div>
+            <div>
+              <div class="js-acme-verification-http-01">
+                <h3>Upload each file</h3>
+                <div class="js-acme-http">
+                  <div class="http-verification-info file-preview">
+                    <div class="paper-fold"></div>
+                    <div>
+                      <div class="file-ver-info-header">FILENAME</div>
+                      <pre class="js-acme-ver-file-location">...loading</pre>
+                    </div>
+                    <hr>
+                    <div>
+                      <div class="file-ver-info-header">CONTENTS</div>
+                      <pre class="js-acme-ver-content">...loading</pre>
+                    </div>
+                    <div class="download-file">
+                      <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <use xlink:href="#svg-download"></use>
+                      </svg>
+                      <a class="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
+                        Download
+                      </a>
+                    </div>
+                    <hr>
+                    <div>
+                      <div class="file-ver-info-header">LOCATION</div>
+                      <pre class="js-acme-ver-uri">..loading</pre>
+                    </div>
                   </div>
-                  <hr>
-                  <div>
-                    <div class="file-ver-info-header">CONTENTS</div>
-                    <pre class="js-acme-ver-content">...loading</pre>
-                  </div>
-                  <div class="download-file">
-                    <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <use xlink:href="#svg-download"></use>
-                    </svg>
-                    <a class="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
-                      Download
-                    </a>
-                  </div>
-                  <hr>
-                  <div>
-                    <div class="file-ver-info-header">LOCATION</div>
-                    <pre class="js-acme-ver-uri">..loading</pre>
-                  </div>
+                  <br>
                 </div>
-                <br>
+              </div>
+              <div class="js-acme-verification-dns-01">
+                <h3>Set each DNS Record</h3>
+                <div class="js-acme-dns">
+                  <div class="acme-ver-dns-label">TXT Host</div>
+                  <div class="js-acme-ver-txt-host">loading...</div>
+                  <div class="acme-ver-dns-label">TXT Value</div>
+                  <div class="js-acme-ver-txt-value">loading...</div>
+                  <br>
+                </div>
               </div>
             </div>
-            <div class="js-acme-verification-dns-01">
-              <h3>Set each DNS Record</h3>
-              <div class="js-acme-dns">
-                <div class="acme-ver-dns-label">TXT Host</div>
-                <div class="js-acme-ver-txt-host">loading...</div>
-                <div class="acme-ver-dns-label">TXT Value</div>
-                <div class="js-acme-ver-txt-value">loading...</div>
-                <br>
-              </div>
-            </div>
-          </div>
 
-          <div class="js-acme-wildcard-challenges">
-            <div class="js-acme-verification-wildcard">
-              <h3>Set each DNS Record (for wildcards)</h3>
-              <div class="js-acme-wildcard">
-                <div class="acme-ver-dns-label">TXT Host</div>
-                <div class="js-acme-ver-txt-host">loading...</div>
-                <div class="acme-ver-dns-label">TXT Value</div>
-                <div class="js-acme-ver-txt-value">loading...</div>
-                <br>
+            <div class="js-acme-wildcard-challenges">
+              <div class="js-acme-verification-wildcard">
+                <h3>Set each DNS Record (for wildcards)</h3>
+                <div class="js-acme-wildcard">
+                  <div class="acme-ver-dns-label">TXT Host</div>
+                  <div class="js-acme-ver-txt-host">loading...</div>
+                  <div class="acme-ver-dns-label">TXT Value</div>
+                  <div class="js-acme-ver-txt-value">loading...</div>
+                  <br>
+                </div>
               </div>
             </div>
           </div>
