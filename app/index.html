@@ -151,7 +151,7 @@
           <br>
           <br>
           -->
-          <button class="button-next" type="submit">Next</button>
+          <button class="button-next js-account-next" type="submit">Next</button>
           <div class="email-usage">
             Why do we need your email?
             We link your SSL certificates to the email you use so that you'll
@@ -177,52 +177,59 @@
               <div></div>
             </label>
           </div>
+          <div>
             <div class="js-acme-verification-http-01">
-              <h3>Upload this file</h3>
-              <div class="http-verification-info file-preview">
-                <div class="paper-fold"></div>
-                <div>
-                  <div class="file-ver-info-header">FILENAME</div>
-                  <pre class="js-acme-ver-file-location">...loading</pre>
+              <h3>Upload each file</h3>
+              <div class="js-acme-http">
+                <div class="http-verification-info file-preview">
+                  <div class="paper-fold"></div>
+                  <div>
+                    <div class="file-ver-info-header">FILENAME</div>
+                    <pre class="js-acme-ver-file-location">...loading</pre>
+                  </div>
+                  <hr>
+                  <div>
+                    <div class="file-ver-info-header">CONTENTS</div>
+                    <pre class="js-acme-ver-content">...loading</pre>
+                  </div>
+                  <div class="download-file">
+                    <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                      <use xlink:href="#svg-download"></use>
+                    </svg>
+                    <a class="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
+                      Download
+                    </a>
+                  </div>
+                  <hr>
+                  <div>
+                    <div class="file-ver-info-header">LOCATION</div>
+                    <pre class="js-acme-ver-uri">..loading</pre>
+                  </div>
                 </div>
-                <hr>
-                <div>
-                  <div class="file-ver-info-header">CONTENTS</div>
-                  <pre class="js-acme-ver-content">...loading</pre>
-                </div>
+                <br>
               </div>
-              <div class="download-file">
-                <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <use xlink:href="#svg-download"></use>
-                </svg>
-                <a class="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
-                  Download
-                </a>
-              </div>
-              <h3>To this location</h3>
-              <div class="js-acme-ver-uri" class="acme-ver-uri">..loading</div>
             </div>
             <div class="js-acme-verification-dns-01">
-              <h3>Set this DNS Record</h3>
-              <div class="acme-ver-dns-label">Hostname</div>
-              <div class="js-acme-ver-hostname">loading...</div>
-              <div class="acme-ver-dns-label">TXT Host</div>
-              <div class="js-acme-ver-txt-host">loading...</div>
-              <div class="acme-ver-dns-label">TXT Value</div>
-              <div class="js-acme-ver-txt-value">loading...</div>
-            </div>
-
-          </div>
-          <div class="js-acme-wildcard-challenges">
-            <div class="js-acme-wildcard">
-              <div class="js-acme-verification-wildcard">
-                <h3>Set this DNS Record</h3>
-                <div class="acme-ver-dns-label">Hostname</div>
-                <div class="js-acme-ver-hostname">loading...</div>
+              <h3>Set each DNS Record</h3>
+              <div class="js-acme-dns">
                 <div class="acme-ver-dns-label">TXT Host</div>
                 <div class="js-acme-ver-txt-host">loading...</div>
                 <div class="acme-ver-dns-label">TXT Value</div>
                 <div class="js-acme-ver-txt-value">loading...</div>
+                <br>
+              </div>
+            </div>
+          </div>
+
+          <div class="js-acme-wildcard-challenges">
+            <div class="js-acme-verification-wildcard">
+              <h3>Set each DNS Record (for wildcards)</h3>
+              <div class="js-acme-wildcard">
+                <div class="acme-ver-dns-label">TXT Host</div>
+                <div class="js-acme-ver-txt-host">loading...</div>
+                <div class="acme-ver-dns-label">TXT Value</div>
+                <div class="js-acme-ver-txt-value">loading...</div>
+                <br>
               </div>
             </div>
           </div>
@@ -291,7 +298,7 @@
             </div>
             <div>
             <h3>node.js https server example</h3>
-            <pre><code>'use strict';
+            <pre><code>    'use strict';
 
     var https = require('https');
     var server = https.createServer({

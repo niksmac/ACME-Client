@@ -226,7 +226,7 @@
     info.domains = $qs('.js-acme-domains').value.replace(/https?:\/\//g, ' ').replace(/[,+]/g, ' ').trim().split(/\s+/g);
     info.identifiers = info.domains.map(function (hostname) {
       return { type: 'dns', value: hostname.toLowerCase().trim() };
-    }).slice(0,1); //Disable multiple values for now.  We'll just take the first and work with it.
+    });
     info.identifiers.sort(function (a, b) {
       if (a === b) { return 0; }
       if (a < b) { return 1; }
@@ -255,6 +255,8 @@
     info.agree = $qs('.js-acme-account-tos').checked;
     //info.greenlockAgree = $qs('.js-gl-tos').checked;
     info.domains = info.identifiers.map(function (ident) { return ident.value; });
+    console.log("domains:");
+    console.log(info.domains);
 
     // TODO ping with version and account creation
     setTimeout(saveContact, 100, email, info.domains);
@@ -266,6 +268,8 @@
 				return '';
 			}
 		}
+
+    $qs('.js-account-next').disabled = true;
 
     return getAccountKeypair(email).then(function (jwk) {
       // TODO save account id rather than always retrieving it?
@@ -313,6 +317,15 @@
         , 'wildcard': '.js-acme-verification-wildcard'
         };
         */
+        var $httpList = $qs('.js-acme-http');
+        var $dnsList = $qs('.js-acme-dns');
+        var $wildList = $qs('.js-acme-wildcard');
+        var httpTpl = $httpList.innerHTML;
+        var dnsTpl = $dnsList.innerHTML;
+        var wildTpl = $wildList.innerHTML;
+        $httpList.innerHTML = '';
+        $dnsList.innerHTML = '';
+        $wildList.innerHTML = '';
 
         claims.forEach(function (claim) {
           console.log("Challenge (claim):");
@@ -339,30 +352,33 @@
             console.log(data);
             console.log('');
 
-            var verification;
+            var verification = document.createElement("div");
             if (claim.wildcard) {
               obj.wildcard.push(data);
-              verification = $qs(".js-acme-verification-wildcard");
-              verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
+              verification.innerHTML = wildTpl;
+              //verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
               verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
               verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
-
+              $wildList.appendChild(verification);
             } else if(obj[data.type]) {
 
               obj[data.type].push(data);
 
               if ('dns-01' === data.type) {
-                verification = $qs(".js-acme-verification-dns-01");
-                verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
+                verification.innerHTML = dnsTpl;
+                //verification.querySelector(".js-acme-ver-hostname").innerHTML = data.hostname;
                 verification.querySelector(".js-acme-ver-txt-host").innerHTML = data.dnsHost;
                 verification.querySelector(".js-acme-ver-txt-value").innerHTML = data.dnsAnswer;
+                $dnsList.appendChild(verification);
               } else if ('http-01' === data.type) {
-                $qs(".js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
-                $qs(".js-acme-ver-content").innerHTML = data.httpAuth;
-                $qs(".js-acme-ver-uri").innerHTML = data.httpPath;
-                $qs(".js-download-verify-link").href =
+                verification.innerHTML = httpTpl;
+                verification.querySelector(".js-acme-ver-file-location").innerHTML = data.httpPath.split("/").slice(-1);
+                verification.querySelector(".js-acme-ver-content").innerHTML = data.httpAuth;
+                verification.querySelector(".js-acme-ver-uri").innerHTML = data.httpPath;
+                verification.querySelector(".js-download-verify-link").href =
                   "data:text/octet-stream;base64," + window.btoa(data.httpAuth);
-                $qs(".js-download-verify-link").download = data.httpPath.split("/").slice(-1);
+                verification.querySelector(".js-download-verify-link").download = data.httpPath.split("/").slice(-1);
+                $httpList.appendChild(verification);
               }
             }
           });
@@ -455,9 +471,6 @@
     $qs('.js-acme-form-download').hidden = false;
   };
 
-  // The kickoff
-  steps[1]();
-
   var params = new URLSearchParams(window.location.search);
   var apiType = params.get('acme-api-type') || "staging-v02";
 
@@ -479,7 +492,7 @@
     $el.addEventListener('change', updateChallengeType);
   });
 
-  if(params.has('acme-domains')) {
+  if (params.has('acme-domains')) {
     console.log("acme-domains param: ", params.get('acme-domains'));
     $qs('.js-acme-domains').value = params.get('acme-domains');
 
@@ -495,6 +508,9 @@
   }
 
   $qs('body').hidden = false;
+
+  // The kickoff
+  steps[1]();
 
   return testKeypairSupport().then(function (rsaSupport) {
     if (rsaSupport) {
