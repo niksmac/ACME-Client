@@ -1907,6 +1907,9 @@ ACME._registerAccount = function (me, options) {
   }
 
   return Promise.resolve().then(function () {
+    if (true === options.agreeToTerms) {
+      options.agreeToTerms = function (tos) { return tos; };
+    }
     return options.agreeToTerms(me._tos);
   }).then(agree);
 };
@@ -1977,7 +1980,7 @@ ACME._testChallengeOptions = function () {
   ];
 };
 ACME._testChallenges = function (me, reals) {
-  console.log('[DEBUG] testChallenges');
+  //#console.log('[DEBUG] testChallenges');
   if (me.skipDryRun || me.skipChallengeTest) {
     return Promise.resolve();
   }
@@ -2043,7 +2046,7 @@ ACME._chooseType = function(options, auths) {
 };
 ACME._challengesMap = {'http-01':0,'dns-01':0,'tls-alpn-01':0};
 ACME._computeAuths = function (me, options, request, dryrun) {
-  console.log('[DEBUG] computeAuths');
+  //#console.log('[DEBUG] computeAuths');
   // we don't poison the dns cache with our dummy request
   var dnsPrefix = ACME.challengePrefixes['dns-01'];
   if (dryrun) {
@@ -2226,7 +2229,7 @@ ACME._postChallenge = function (me, options, auth) {
 
 // options = { domains, claims, challenges, challengePriority }
 ACME._setChallengesAll = function (me, options) {
-  console.log("[DEBUG] setChallengesAll");
+  //#console.log("[DEBUG] setChallengesAll");
   var claims = options.order.claims.slice(0);
   var valids = [];
   var auths = [];
@@ -2331,8 +2334,8 @@ ACME._finalizeOrder = function (me, options) {
       }
       return challengeNext().then(function () {
         //#console.debug("[getCertificate] next.then");
-        console.log('DEBUG 1 order:');
-        console.log(options.order);
+        //#console.log('DEBUG order:');
+        //#console.log(options.order);
         return options.order.identifiers.map(function (ident) {
           return ident.value;
         });
