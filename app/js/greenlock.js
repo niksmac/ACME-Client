@@ -183,7 +183,7 @@
   }
 
   steps[1] = function () {
-    console.info("1. Show domains form");
+    console.info("\n1. Show domains form");
     updateProgress(0);
     hideForms();
     $qs('.js-acme-form-domains').hidden = false;
@@ -212,7 +212,7 @@
   };
 
   steps[2] = function () {
-    console.info("2. Show account (email, ToS) form");
+    console.info("\n2. Show account (email, ToS) form");
 
     updateProgress(0);
     hideForms();
@@ -355,7 +355,7 @@
   };
 
   steps[3] = function () {
-    console.info("3. Present challenge options");
+    console.info("\n3. Present challenge options");
     updateProgress(1);
     hideForms();
     $qs('.js-acme-form-challenges').hidden = false;
@@ -408,7 +408,7 @@
 
   // spinner
   steps[4] = function () {
-    console.info('4. Show loading spinner');
+    console.info('\n4. Show loading spinner');
     updateProgress(1);
     hideForms();
     $qs('.js-acme-form-poll').hidden = false;
@@ -420,20 +420,16 @@
   };
 
   steps[5] = function () {
-    console.info('5. Present certificates (yay!)');
+    console.info('\n5. Present certificates (yay!)');
     updateProgress(2);
     hideForms();
     $qs('.js-acme-form-download').hidden = false;
   };
 
   function init() {
-    var params = new URLSearchParams(window.location.search);
-    var apiType = params.get('acme-api-type') || "staging-v02";
-
     $qsa('.js-acme-api-type').forEach(function ($el) {
       $el.addEventListener('change', updateApiType);
     });
-
     updateApiType();
 
     $qsa('.js-acme-form').forEach(function ($el) {
@@ -443,11 +439,13 @@
       });
     });
 
-
     $qsa('.js-acme-challenge-type').forEach(function ($el) {
       $el.addEventListener('change', updateChallengeType);
     });
 
+
+    var params = new URLSearchParams(window.location.search);
+    var apiType = params.get('acme-api-type') || "staging-v02";
     if (params.has('acme-domains')) {
       $qs('.js-acme-domains').value = params.get('acme-domains');
 
@@ -460,12 +458,10 @@
       updateApiType();
       steps[2]();
       submitForm();
+    } else {
+      steps[1]();
     }
-
   }
-
-  // The kickoff
-  steps[1]();
 
   init();
   $qs('body').hidden = false;
