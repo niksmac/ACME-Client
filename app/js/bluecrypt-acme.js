@@ -2704,6 +2704,16 @@ ACME._jwsRequest = function (me, bigopts) {
       //#console.debug('[acme-v2] ' + bigopts.url + ':');
       //#console.debug(jws);
       return ACME._request(me, { url: bigopts.url, json: jws });
+    }).catch(function (e) {
+      if (/badNonce$/.test(e.urn)) {
+        // retry badNonces
+        var retryable = (bigopts._retries >= 2);
+        if (!retryable) {
+          bigopts._retries = (bigopts._retries || 0) + 1;
+          return ACME._jwsRequest(me, bigopts);
+        }
+      }
+      throw e;
     });
   });
 };
