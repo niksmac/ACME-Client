@@ -61,23 +61,39 @@
     }
   }
 
+  function newAlert(str) {
+    return new Promise(function () {
+      setTimeout(function () {
+        window.alert(str);
+        if (window.confirm("Start over?")) {
+          document.location.href = document.location.href.replace(/\/app.*/, '/');
+        }
+      }, 10);
+    });
+  }
+
   function submitForm(ev) {
     var j = i;
     i += 1;
 
-    return PromiseA.resolve(steps[j].submit(ev)).catch(function (err) {
+    return PromiseA.resolve().then(function () {
+      return steps[j].submit(ev);
+    }).catch(function (err) {
       var ourfault = true;
       console.error(err);
-      console.error(Object.keys(err));
-      if ('E_CHALLENGE_INVALID' === err.code) {
+      if (/failed to fetch/i.test(err.message)) {
+        return newAlert("Network connection failure.");
+      }
+
+      if ('E_ACME_CHALLENGE' === err.code) {
         if ('dns-01' === err.type) {
           ourfault = false;
-          window.alert("It looks like the DNS record you set for "
+          return newAlert("It looks like the DNS record you set for "
             + err.altname + " was incorrect or did not propagate. "
             + "The error message was '" + err.message + "'");
         } else if ('http-01' === err.type) {
           ourfault = false;
-          window.alert("It looks like the file you uploaded for "
+          return newAlert("It looks like the file you uploaded for "
             + err.altname + " was incorrect or could not be downloaded. "
             + "The error message was '" + err.message + "'");
         }
@@ -88,6 +104,7 @@
         window.alert("Something went wrong. It's probably our fault, not yours."
           + " Please email aj@rootprojects.org to let him know. The error message is: \n"
           + JSON.stringify(err, null, 2));
+        return new Promise(function () {});
       }
     });
   }
@@ -207,7 +224,7 @@
     acme = ACME.create({ Keypairs: Keypairs, CSR: CSR });
     return acme.init(acmeDirectoryUrl).then(function (directory) {
       $qs('.js-acme-tos-url').href = directory.meta.termsOfService;
-      steps[i]();
+      return steps[i]();
     });
   };
 
@@ -248,12 +265,7 @@
         }).catch(function (err) {
           console.error("[accounts] failed to upsert account:");
           console.error(err);
-          window.alert(err.message || JSON.stringify(err, null, 2));
-          return new Promise(function () {
-            if (window.confirm("Start over?")) {
-              document.location.reload();
-            }
-          });
+          return newAlert(err.message || JSON.stringify(err, null, 2));
         });
       });
     }).then(function () {
@@ -344,12 +356,19 @@
         console.info("[housekeeping] challenges", info.challenges);
 
         updateChallengeType();
-        steps[i]();
+        return steps[i]();
+      }).catch(function (err) {
+        if (err.detail || err.urn) {
+          console.error("(Probably) User Error:");
+          console.error(err);
+          return newAlert("There was an error, probably with your email or domain:\n" + err.message);
+        }
+        throw err;
       });
     }).catch(function (err) {
       console.error('Step \'\' Error:');
       console.error(err, err.stack);
-      window.alert("An error happened (but it's not your fault)."
+      return newAlert("An error happened (but it's not your fault)."
         + " Email aj@rootprojects.org to let him know that 'order and get challenges' failed.");
     });
   };
@@ -388,7 +407,7 @@
         }).then(function (certs) {
           return Keypairs.export({ jwk: serverJwk }).then(function (keyPem) {
             console.info('WINNING!');
-            console.log(certs);
+            console.info(certs);
             $qs('#js-fullchain').innerHTML = [
               certs.cert.trim() + "\n"
             , certs.chain + "\n"
@@ -399,7 +418,7 @@
             $qs('#js-privkey').innerHTML = keyPem;
             $qs("#js-download-privkey-link").href =
               "data:text/octet-stream;base64," + window.btoa(keyPem);
-            submitForm();
+            return submitForm();
           });
         });
       });
@@ -416,7 +435,7 @@
   steps[4].submit = function () {
     console.info('[submit] 4. Order complete');
 
-    steps[i]();
+    return steps[i]();
   };
 
   steps[5] = function () {
@@ -435,7 +454,7 @@
     $qsa('.js-acme-form').forEach(function ($el) {
       $el.addEventListener('submit', function (ev) {
         ev.preventDefault();
-        submitForm(ev);
+        return submitForm(ev);
       });
     });
 
@@ -457,7 +476,7 @@
 
       updateApiType();
       steps[2]();
-      submitForm();
+      return submitForm();
     } else {
       steps[1]();
     }
