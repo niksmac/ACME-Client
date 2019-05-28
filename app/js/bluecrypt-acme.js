@@ -2174,7 +2174,7 @@ ACME._postChallenge = function (me, options, auth) {
       options: options
     , url: auth.url
     , protected: { kid: options._kid }
-    , payload: Enc.binToBuf(JSON.stringify({}))
+    , payload: Enc.binToBuf('')
     }).then(function (resp) {
       if ('processing' === resp.body.status) {
         //#console.debug('poll: again');
@@ -2225,7 +2225,7 @@ ACME._postChallenge = function (me, options, auth) {
       options: options
     , url: auth.url
     , protected: { kid: options._kid }
-    , payload: Enc.binToBuf(JSON.stringify({}))
+    , payload: Enc.binToBuf('')
     }).then(function (/*#resp*/) {
       //#console.debug('respond to challenge: resp.body:');
       //#console.debug(resp.body);
@@ -2431,7 +2431,7 @@ ACME._finalizeOrder = function (me, options) {
             options: options
           , url: options._certificate
           , protected: { kid: options._kid }
-          , payload: Enc.binToBuf(JSON.stringify({}))
+          , payload: Enc.binToBuf('')
           }).then(function (resp) {
             //#console.debug('acme-v2: csr submitted and cert received:');
             // https://github.com/certbot/certbot/issues/5721
