@@ -1785,7 +1785,7 @@ ACME.challengeTests = {
 
 ACME._directory = function (me) {
   // GET-as-GET ok
-  return me.request({ method: 'GET', url: me.directoryUrl, json: true });
+  return ACME._request(me, { method: 'GET', url: me.directoryUrl });
 };
 ACME._getNonce = function (me) {
   // GET-as-GET, HEAD-as-HEAD ok
@@ -1800,7 +1800,8 @@ ACME._getNonce = function (me) {
     }
   }
   if (nonce) { return Promise.resolve(nonce.nonce); }
-  return me.request({ method: 'HEAD', url: me._directoryUrls.newNonce }).then(function (resp) {
+  // GET-as-GET ok
+  return ACME._request(me, { method: 'HEAD', url: me._directoryUrls.newNonce }).then(function (resp) {
     return resp.headers['replay-nonce'];
   });
 };
@@ -2168,7 +2169,13 @@ ACME._postChallenge = function (me, options, auth) {
     count += 1;
 
     //#console.debug('\n[DEBUG] statusChallenge\n');
-    return me.request({ method: 'GET', url: auth.url, json: true }).then(function (resp) {
+    // POST-as-GET
+    return ACME._jwsRequest(me, {
+      options: options
+    , url: auth.url
+    , protected: { kid: options._kid }
+    , payload: Enc.binToBuf(JSON.stringify({}))
+    }).then(function (resp) {
       if ('processing' === resp.body.status) {
         //#console.debug('poll: again');
         return ACME._wait(RETRY_INTERVAL).then(pollStatus);
@@ -2192,26 +2199,28 @@ ACME._postChallenge = function (me, options, auth) {
         return resp.body;
       }
 
-      var err;
-      if (resp.body.error && resp.body.error.detail) {
-        err = new Error("[acme-v2] " + auth.altname + " state:" + resp.body.status + " " + resp.body.error.detail);
+      var code = 'E_ACME_UNKNOWN';
+      var err = new Error("[acme-v2] " + auth.altname + " (" + code + "): " + JSON.stringify(resp.body, null, 2));
+      err.code = code;
+
+      return Promise.reject(err);
+    }).catch(function (e) {
+      var err = e;
+      if (err.urn) {
+        err = new Error("[acme-v2] " + auth.altname + " status:" + e.status + " " + e.detail);
         err.auth = auth;
         err.altname = auth.altname;
         err.type = auth.type;
-        err.urn = resp.body.error.type;
-        err.code = ('invalid' === resp.body.status) ? 'E_CHALLENGE_INVALID' : 'E_CHALLENGE_UNKNOWN';
-        err.uri = resp.body.url;
-      } else {
-        err = new Error("[acme-v2] " + auth.altname + " (E_STATE_UKN): " + JSON.stringify(resp.body, null, 2));
-        err.code = 'E_CHALLENGE_UNKNOWN';
+        err.code = ('invalid' === e.status) ? 'E_ACME_CHALLENGE' : 'E_ACME_UNKNOWN';
       }
 
-      return Promise.reject(err);
+      throw err;
     });
   }
 
   function respondToChallenge() {
     //#console.debug('[acme-v2.js] responding to accept challenge:');
+    // POST-as-GET
     return ACME._jwsRequest(me, {
       options: options
     , url: auth.url
@@ -2417,7 +2426,13 @@ ACME._finalizeOrder = function (me, options) {
           return pollCert();
         }).then(function () {
           //#console.debug('acme-v2: order was finalized');
-          return me.request({ method: 'GET', url: options._certificate, json: true }).then(function (resp) {
+          // POST-as-GET
+          return ACME._jwsRequest(me, {
+            options: options
+          , url: options._certificate
+          , protected: { kid: options._kid }
+          , payload: Enc.binToBuf(JSON.stringify({}))
+          }).then(function (resp) {
             //#console.debug('acme-v2: csr submitted and cert received:');
             // https://github.com/certbot/certbot/issues/5721
             var certsarr = ACME.splitPemChain(ACME.formatPemChain((resp.body||'')));
@@ -2618,6 +2633,7 @@ ACME.create = function create(me) {
     }
     var p = Promise.resolve();
     if (!me.skipChallengeTest) {
+      // Not ACME
       p = me.request({ url: me._baseUrl + "/api/_acme_api_/" }).then(function (resp) {
         if (resp.body.success) {
           me._canCheck['http-01'] = true;
@@ -2687,10 +2703,35 @@ ACME._request = function (me, opts) {
     if (!opts.method) { opts.method = 'POST'; }
   }
   return me.request(opts).then(function (resp) {
-    resp = resp.toJSON();
+    if (resp.toJSON) { resp = resp.toJSON(); }
     if (resp.headers['replay-nonce']) {
       ACME._setNonce(me, resp.headers['replay-nonce']);
     }
+
+    var e;
+    var err;
+    if (resp.body) {
+      err = resp.body.error;
+      e = new Error("");
+      if (400 === resp.body.status) {
+        err = { type: resp.body.type, detail: resp.body.detail };
+      }
+      if (err) {
+        e.status = resp.body.status;
+        e.code = 'E_ACME';
+        if (e.status) {
+          e.message = "[" + e.status + "] ";
+        }
+        e.detail = err.detail;
+        e.message += (err.detail || JSON.stringify(err));
+        e.urn = err.type;
+        e.uri = resp.body.url;
+        e._rawError = err;
+        e._rawBody = resp.body;
+        throw e;
+      }
+    }
+
     return resp;
   });
 };
@@ -2771,6 +2812,7 @@ ACME._toHex = function (pair) {
   return parseInt(pair, 10).toString(16);
 };
 ACME._dns01 = function (me, auth) {
+  // Not ACME
   return new me.request({ url: me._baseUrl + "/api/dns/" + auth.dnsHost + "?type=TXT" }).then(function (resp) {
     var err;
     if (!resp.body || !Array.isArray(resp.body.answer)) {
@@ -2792,6 +2834,7 @@ ACME._dns01 = function (me, auth) {
 };
 ACME._http01 = function (me, auth) {
   var url = encodeURIComponent(auth.challengeUrl);
+  // Not ACME
   return new me.request({ url: me._baseUrl + "/api/http?url=" + url }).then(function (resp) {
     return resp.body;
   });
