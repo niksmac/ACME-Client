@@ -2220,12 +2220,12 @@ ACME._postChallenge = function (me, options, auth) {
 
   function respondToChallenge() {
     //#console.debug('[acme-v2.js] responding to accept challenge:');
-    // POST-as-GET
+    // POST-as-POST (empty JSON object)
     return ACME._jwsRequest(me, {
       options: options
     , url: auth.url
     , protected: { kid: options._kid }
-    , payload: Enc.binToBuf('')
+    , payload: Enc.binToBuf(JSON.stringify({}))
     }).then(function (/*#resp*/) {
       //#console.debug('respond to challenge: resp.body:');
       //#console.debug(resp.body);
