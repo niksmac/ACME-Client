@@ -2119,7 +2119,7 @@ ACME._untame = function (name, wild) {
 
 // https://tools.ietf.org/html/draft-ietf-acme-acme-10#section-7.5.1
 ACME._postChallenge = function (me, options, auth) {
-  var RETRY_INTERVAL = me.retryInterval || 1000;
+  var RETRY_INTERVAL = me.retryInterval || 5000;
   var DEAUTH_INTERVAL = me.deauthWait || 10 * 1000;
   var MAX_POLL = me.retryPoll || 8;
   var MAX_PEND = me.retryPending || 4;
@@ -2161,9 +2161,11 @@ ACME._postChallenge = function (me, options, auth) {
 
   function pollStatus() {
     if (count >= MAX_POLL) {
-      return Promise.reject(new Error(
+      var err = new Error(
         "[acme-v2] stuck in bad pending/processing state for '" + altname + "'"
-      ));
+      );
+      err.detail = "Too many attempts to validate challenge.";
+      return Promise.reject();
     }
 
     count += 1;
@@ -2175,47 +2177,62 @@ ACME._postChallenge = function (me, options, auth) {
     , url: auth.url
     , protected: { kid: options._kid }
     , payload: Enc.binToBuf('')
-    }).then(function (resp) {
-      if ('processing' === resp.body.status) {
-        //#console.debug('poll: again');
-        return ACME._wait(RETRY_INTERVAL).then(pollStatus);
+    }).then(checkResult).catch(transformError);
+  }
+
+  function checkResult(resp) {
+    if (options.onChallengeStatus) {
+      try {
+        options.onChallengeStatus({
+          altname: altname, type: auth.type, status: resp.body.status, wildcard: auth.wildcard
+        });
+      } catch(e) {
+        console.warn('options.onChallengeStatus Error:');
+        console.warn(e);
       }
+    }
 
-      // This state should never occur
-      if ('pending' === resp.body.status) {
-        if (count >= MAX_PEND) {
-          return ACME._wait(RETRY_INTERVAL).then(deactivate).then(respondToChallenge);
-        }
-        //#console.debug('poll: again');
-        return ACME._wait(RETRY_INTERVAL).then(respondToChallenge);
+    if ('processing' === resp.body.status) {
+      //#console.debug('poll: again');
+      return ACME._wait(RETRY_INTERVAL).then(pollStatus);
+    }
+
+    // This state should never occur
+    if ('pending' === resp.body.status) {
+      if (count >= MAX_PEND) {
+        return ACME._wait(RETRY_INTERVAL).then(deactivate).then(respondToChallenge);
       }
+      //#console.debug('poll: again');
+      return ACME._wait(RETRY_INTERVAL).then(pollStatus);
+    }
 
-      if ('valid' === resp.body.status) {
-        //#console.debug('poll: valid');
+    if ('valid' === resp.body.status) {
+      //#console.debug('poll: valid');
 
-        try {
-          ACME._removeChallenge(me, options, auth);
-        } catch(e) {}
-        return resp.body;
-      }
+      try {
+        ACME._removeChallenge(me, options, auth);
+      } catch(e) {}
+      return resp.body;
+    }
 
-      var code = 'E_ACME_UNKNOWN';
-      var err = new Error("[acme-v2] " + auth.altname + " (" + code + "): " + JSON.stringify(resp.body, null, 2));
-      err.code = code;
+    var code = 'E_ACME_UNKNOWN';
+    var err = new Error("[acme-v2] " + auth.altname + " (" + code + "): " + JSON.stringify(resp.body, null, 2));
+    err.code = code;
 
-      return Promise.reject(err);
-    }).catch(function (e) {
-      var err = e;
-      if (err.urn) {
-        err = new Error("[acme-v2] " + auth.altname + " status:" + e.status + " " + e.detail);
-        err.auth = auth;
-        err.altname = auth.altname;
-        err.type = auth.type;
-        err.code = ('invalid' === e.status) ? 'E_ACME_CHALLENGE' : 'E_ACME_UNKNOWN';
-      }
+    return Promise.reject(err);
+  }
 
-      throw err;
-    });
+  function transformError(e) {
+    var err = e;
+    if (err.urn) {
+      err = new Error("[acme-v2] " + auth.altname + " status:" + e.status + " " + e.detail);
+      err.auth = auth;
+      err.altname = auth.altname;
+      err.type = auth.type;
+      err.code = ('invalid' === e.status) ? 'E_ACME_CHALLENGE' : 'E_ACME_UNKNOWN';
+    }
+
+    throw err;
   }
 
   function respondToChallenge() {
@@ -2226,11 +2243,7 @@ ACME._postChallenge = function (me, options, auth) {
     , url: auth.url
     , protected: { kid: options._kid }
     , payload: Enc.binToBuf(JSON.stringify({}))
-    }).then(function (/*#resp*/) {
-      //#console.debug('respond to challenge: resp.body:');
-      //#console.debug(resp.body);
-      return ACME._wait(RETRY_INTERVAL).then(pollStatus);
-    });
+    }).then(checkResult).catch(transformError);
   }
 
   return respondToChallenge();

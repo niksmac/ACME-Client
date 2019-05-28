@@ -404,6 +404,12 @@
         , domainKeypair: { privateKeyJwk: serverJwk }
         , challengePriority: challengePriority
         , challenges: false
+        , onChallengeStatus: function (details) {
+            $qs('.js-challenge-responses').hidden = false;
+            $qs('.js-challenge-response-type').innerText = details.type;
+            $qs('.js-challenge-response-status').innerText = details.status;
+            $qs('.js-challenge-response-altname').innerText = details.altname;
+          }
         }).then(function (certs) {
           return Keypairs.export({ jwk: serverJwk }).then(function (keyPem) {
             console.info('WINNING!');
