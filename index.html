@@ -1,99 +1,171 @@
 <html>
-  <head>
-    <title>Greenlock&trade;</title>
-    <meta property="og:image" content="https://greenlock.domains/img/greenlock-mark-400x400.png" />
-    <link href="styles/main.css" rel="stylesheet">
-    <style>
-      @font-face {
-        font-family: 'Source Sans Pro';
-        font-style: normal;
-        font-display: block;
-        font-weight: 400;
-        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-      }
-      @font-face {
-        font-family: 'Source Sans Pro';
-        font-style: normal;
-        font-weight: 700;
-        font-display: block;
-        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-      }
-    </style>
-    <link rel="preload" href="./app/fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2" as="font" crossorigin="anonymous">
-    <link rel="preload" href="./app/fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2" as="font" crossorigin="anonymous">
-    <link rel="prefetch" href="./app/fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2" as="font" crossorigin="anonymous">
-    <link rel="prefetch" href="./app/js/bluecrypt-acme.js" as="script">
-    <link rel="prefetch" href="./app/js/greenlock.js" as="script">
-    <link rel="prefetch" href="./js/app.js" as="script">
-  </head>
-  <body class="js-app-ready">
-    <script>
-      document.querySelector('body').classList.remove("js-app-ready");
-    </script>
-    <div class="column-container wide">
+	<head>
+		<title>Greenlock&trade;</title>
+		<meta
+			property="og:image"
+			content="https://greenlock.domains/img/greenlock-mark-400x400.png"
+		/>
+		<link href="styles/main.css" rel="stylesheet" />
+		<style>
+			@font-face {
+				font-family: "Source Sans Pro";
+				font-style: normal;
+				font-display: block;
+				font-weight: 400;
+				src: local("Source Sans Pro Regular"), local("SourceSansPro-Regular"),
+					url(./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2) format("woff2");
+				unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+					U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+					U+2212, U+2215, U+FEFF, U+FFFD;
+			}
+			@font-face {
+				font-family: "Source Sans Pro";
+				font-style: normal;
+				font-weight: 700;
+				font-display: block;
+				src: local("Source Sans Pro Bold"), local("SourceSansPro-Bold"),
+					url(./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2)
+						format("woff2");
+				unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+					U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+					U+2212, U+2215, U+FEFF, U+FFFD;
+			}
+		</style>
+		<link
+			rel="preload"
+			href="./app/fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2"
+			as="font"
+			crossorigin="anonymous"
+		/>
+		<link
+			rel="preload"
+			href="./app/fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2"
+			as="font"
+			crossorigin="anonymous"
+		/>
+		<link
+			rel="prefetch"
+			href="./app/fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2"
+			as="font"
+			crossorigin="anonymous"
+		/>
+		<link rel="prefetch" href="./app/js/bluecrypt-acme.js" as="script" />
+		<link rel="prefetch" href="./app/js/greenlock.js" as="script" />
+		<link rel="prefetch" href="./js/app.js" as="script" />
+	</head>
+	<body class="js-app-ready">
+		<script>
+			document.querySelector("body").classList.remove("js-app-ready");
+		</script>
+		<div class="column-container wide">
+			<div class="column-row">
+				<img alt="Greenlock logo" src="img/greenlock-146.png" />
+			</div>
+			<div class="column-row">
+				<h1>Get the green lock for your website</h1>
+			</div>
+			<div class="column-row">
+				<div class="js-javascript-warning">
+					Greenlock will process the CSR in the browser and request the
+					certificates directly from letsencrypt.org. Please enable Javascript
+					before continuing.
+				</div>
+				<form id="js-acme-form" action="./app/" method="GET">
+					<div class="domain-psuedo-input">
+						<span class="secure-green">Secure</span> |
+						<span class="secure-green">https:</span>//<input
+							aria-label="domains to secure"
+							id="acme-domains"
+							type="text"
+							name="acme-domains"
+							placeholder="Your domain name"
+							required
+						/>
+					</div>
+					<button type="submit">Go</button>
+					<div class="domain-subtext">
+						Domain, subdomain, or wildcard domain
+					</div>
 
-      <div class="column-row">
-        <img src="img/greenlock-146.png">
-      </div>
-      <div class="column-row">
-        <h1>Get the green lock for your website</h1>
-      </div>
-      <div class="column-row">
-        <div class="js-javascript-warning">
-          Greenlock will process the CSR in the browser and request the certificates directly from letsencrypt.org.
-          Please enable Javascript before continuing.
-        </div>
-        <form id="js-acme-form" action="./app/" method="GET">
-          <div class="domain-psuedo-input">
-            <span class="secure-green">Secure</span> | <span class="secure-green">https:</span>//<input aria-label="domains to secure" id="acme-domains" type="text" name="acme-domains" placeholder="Your domain name" required>
-          </div>
-          <button type="submit">Go</button>
-          <div class="domain-subtext">Domain, subdomain, or wildcard domain</div>
-
-          <div class="acme-advanced-fields">
-            <label><input name="acme-api-type" type="radio" value="v02" checked required>
-              Production
-            </label>
-            <label><input name="acme-api-type" type="radio" value="staging-v02" required>
-              Testing</label>
-            <input id="js-acme-api-url" type="url" placeholder="ACME directory url">
-            <br>
-            API Compatibility: Let's Encrypt v2 / ACME draft 15
-            <div>
-              <br>
-              A <a href="https://rootprojects.org/" target="_blank">Root</a> Project
-              | <a href="https://git.coolaj86.com/coolaj86/greenlock.html" target="_blank">View Source</a> (git)
-              | <a href="https://rootprojects.org/legal/#terms" target="_blank">Terms of Service</a>
-              | <a href="https://rootprojects.org/legal/#privacy" target="_blank">Privacy Policy</a>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="column-row">
-        <div class="why-you-need">
-          <h2>Why you need HTTPS</h2>
-          SSL Certificates are required for secure login, accepting payments, and for browsers like Google Chrome to stop showing security warnings to your users.
-        </div>
-      </div>
-      <!-- or
+					<div class="acme-advanced-fields">
+						<label
+							><input
+								name="acme-api-type"
+								type="radio"
+								value="v02"
+								checked
+								required
+							/>
+							Production
+						</label>
+						<label
+							><input
+								name="acme-api-type"
+								type="radio"
+								value="staging-v02"
+								required
+							/>
+							Testing</label
+						>
+						<input
+							id="js-acme-api-url"
+							type="url"
+							placeholder="ACME directory url"
+						/>
+						<br />
+						API Compatibility: Let's Encrypt v2 / ACME draft 15
+						<div>
+							<br />
+							A
+							<a href="https://rootprojects.org/" target="_blank">Root</a>
+							Project |
+							<a
+								href="https://git.coolaj86.com/coolaj86/greenlock.html"
+								target="_blank"
+								>View Source</a
+							>
+							(git) |
+							<a href="https://rootprojects.org/legal/#terms" target="_blank"
+								>Terms of Service</a
+							>
+							|
+							<a href="https://rootprojects.org/legal/#privacy" target="_blank"
+								>Privacy Policy</a
+							>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="column-row">
+				<div class="why-you-need">
+					<h2>Why you need HTTPS</h2>
+					SSL Certificates are required for secure login, accepting payments,
+					and for browsers like Google Chrome to stop showing security warnings
+					to your users.
+				</div>
+			</div>
+			<!-- or
       <pre><code>git clone https://git.coolaj86.com/coolaj86/greenlock.html.git</code></pre>
       Or view the live site code (same as live-site branch):
       <pre><code>wget https://greenlock.domains --mirror --convert-links --adjust-extension --page-requisites --no-parent</code></pre>
       -->
 
-      <script src="./js/app.js"></script>
+			<script src="./js/app.js"></script>
 
-      <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-118745161-2"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
+			<!-- Global site tag (gtag.js) - Google Analytics -->
+			<script
+				async
+				src="https://www.googletagmanager.com/gtag/js?id=UA-118745161-2"
+			></script>
+			<script>
+				window.dataLayer = window.dataLayer || [];
+				function gtag() {
+					dataLayer.push(arguments);
+				}
+				gtag("js", new Date());
 
-        gtag('config', 'UA-118745161-2');
-      </script>
-    </div>
-  </body>
+				gtag("config", "UA-118745161-2");
+			</script>
+		</div>
+	</body>
 </html>

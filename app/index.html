@@ -1,262 +1,403 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Greenlock&trade;</title>
-    <meta property="og:image" content="https://greenlock.domains/img/greenlock-mark-400x400.png" />
-    <style>
-      @font-face {
-        font-family: 'Source Sans Pro';
-        font-style: normal;
-        font-display: block;
-        font-weight: 400;
-        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-      }
-      @font-face {
-        font-family: 'Source Sans Pro';
-        font-style: normal;
-        font-weight: 700;
-        font-display: block;
-        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-      }
-      @font-face {
-        font-family: 'Source Code Pro';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Source Code Pro'), local('SourceCodePro-Regular'), url(./fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2) format('woff2');
-        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-      }
-    </style>
+	<head>
+		<title>Greenlock&trade;</title>
+		<meta
+			property="og:image"
+			content="https://greenlock.domains/img/greenlock-mark-400x400.png"
+		/>
+		<style>
+			@font-face {
+				font-family: "Source Sans Pro";
+				font-style: normal;
+				font-display: block;
+				font-weight: 400;
+				src: local("Source Sans Pro Regular"), local("SourceSansPro-Regular"),
+					url(./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2) format("woff2");
+				unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+					U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+					U+2212, U+2215, U+FEFF, U+FFFD;
+			}
+			@font-face {
+				font-family: "Source Sans Pro";
+				font-style: normal;
+				font-weight: 700;
+				font-display: block;
+				src: local("Source Sans Pro Bold"), local("SourceSansPro-Bold"),
+					url(./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2)
+						format("woff2");
+				unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+					U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+					U+2212, U+2215, U+FEFF, U+FFFD;
+			}
+			@font-face {
+				font-family: "Source Code Pro";
+				font-style: normal;
+				font-weight: 400;
+				src: local("Source Code Pro"), local("SourceCodePro-Regular"),
+					url(./fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2) format("woff2");
+				unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+					U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+					U+2212, U+2215, U+FEFF, U+FFFD;
+			}
+		</style>
 
-    <link href="styles/main.css" rel="stylesheet">
-    <link rel="preload" href="./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2" as="font" crossorigin="anonymous">
-    <link rel="preload" href="./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2" as="font" crossorigin="anonymous">
+		<link href="styles/main.css" rel="stylesheet" />
+		<link
+			rel="preload"
+			href="./fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2"
+			as="font"
+			crossorigin="anonymous"
+		/>
+		<link
+			rel="preload"
+			href="./fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2"
+			as="font"
+			crossorigin="anonymous"
+		/>
 
-    <link rel="preload" href="./fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2" as="font" crossorigin="anonymous">
-    <link rel="preload" href="./js/bluecrypt-acme.js" as="script">
-    <link rel="preload" href="./js/greenlock.js" as="script">
+		<link
+			rel="preload"
+			href="./fonts/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevW.woff2"
+			as="font"
+			crossorigin="anonymous"
+		/>
+		<link rel="preload" href="./js/bluecrypt-acme.js" as="script" />
+		<link rel="preload" href="./js/greenlock.js" as="script" />
+	</head>
+	<body hidden>
+		<!-- let's define our SVG that we will reuse -->
 
-  </head>
-  <body hidden>
-    <!-- let's define our SVG that we will reuse -->
-
-    <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" viewBox="0 0 24 24">
-      <defs>
-        <g id="svg-check">
-          <path fill="none" d="M0 0h24v24H0z"/>
-          <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-        </g>
-        <g id="svg-checked">
-          <path d="M0 0h24v24H0z" fill="none"/>
-          <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </g>
-        <g id="svg-unchecked">
-          <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-          <path d="M0 0h24v24H0z" fill="none"/>
-        </g>
-        <g id="svg-download">
-          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-          <path d="M0 0h24v24H0z" fill="none"/>
-        </g>
-      </defs>
-    </svg>
-    <div class="column-container wide">
-      <div class="header-row column-row">
-        <div id="js-progress-bar" class="progress-bar">
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="0"
+			height="0"
+			viewbox="0 0 24 24"
+		>
+			<defs>
+				<g id="svg-check">
+					<path fill="none" d="M0 0h24v24H0z" />
+					<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+				</g>
+				<g id="svg-checked">
+					<path d="M0 0h24v24H0z" fill="none" />
+					<path
+						d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+					/>
+				</g>
+				<g id="svg-unchecked">
+					<path
+						d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+					/>
+					<path d="M0 0h24v24H0z" fill="none" />
+				</g>
+				<g id="svg-download">
+					<path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+					<path d="M0 0h24v24H0z" fill="none" />
+				</g>
+			</defs>
+		</svg>
+		<div class="column-container wide">
+			<div class="header-row column-row">
+				<div id="js-progress-bar" class="progress-bar">
+					<div class="progress-bar-step">
+						<div class="circle">
+							<svg
+								display="none"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-check"></use>
+							</svg>
+						</div>
+						<div class="progress-step-label"><div>Details</div></div>
+					</div>
+					<div class="progress-bar-step">
+						<div class="circle">
+							<svg
+								display="none"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-check"></use>
+							</svg>
+						</div>
+						<div class="progress-step-label"><div>Verify domain</div></div>
+					</div>
+					<div class="progress-bar-step">
+						<div class="circle">
+							<svg
+								display="none"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-check"></use>
+							</svg>
+						</div>
+						<div class="progress-step-label">
+							<div>Install certificates</div>
+						</div>
+					</div>
+					<!-- hide until the steps are all updated
           <div class="progress-bar-step">
             <div class="circle">
-              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-check"></use>
-              </svg>
-            </div>
-            <div class="progress-step-label"><div>Details</div></div>
-          </div>
-          <div class="progress-bar-step">
-            <div class="circle">
-              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-check"></use>
-              </svg>
-            </div>
-            <div class="progress-step-label"><div>Verify domain</div></div>
-          </div>
-          <div class="progress-bar-step">
-            <div class="circle">
-              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-check"></use>
-              </svg>
-            </div>
-            <div class="progress-step-label"><div>Install certificates</div></div>
-          </div>
-          <!-- hide until the steps are all updated
-          <div class="progress-bar-step">
-            <div class="circle">
-              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <svg display="none" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
                 <use xlink:href="#svg-check"></use>
               </svg>
             </div>
             <div class="progress-step-label"><div>Done</div></div>
           </div>
           -->
-        </div>
-        <div class="greenlock-logo-badge"><img src="./img/greenlock-mark-400x400.png"></div>
-        <div class="greenlock-name">Greenlock</div>
-      </div>
-      <div class="column-row">
-        <form class="js-acme-form js-acme-form-domains">
-          <h1><label>What's your domain?</label></h1>
-          <h4>Certificates are valid for 90 days. Renewal is free :)</h4>
-          <input class="js-acme-domains" type="text" placeholder="example.com,*.example.com" required>
-          <br>
-          <button type="submit">Next</button>
+				</div>
+				<div class="greenlock-logo-badge">
+					<img src="./img/greenlock-mark-400x400.png" />
+				</div>
+				<div class="greenlock-name">Greenlock</div>
+			</div>
+			<div class="column-row">
+				<form class="js-acme-form js-acme-form-domains">
+					<h1><label>What's your domain?</label></h1>
+					<h4>Certificates are valid for 90 days. Renewal is free :)</h4>
+					<input
+						class="js-acme-domains"
+						type="text"
+						placeholder="example.com,*.example.com"
+						required
+					/>
+					<br />
+					<button type="submit">Next</button>
 
-          <br>
-          <br>
-          <br>
-          <label><input class="js-acme-api-type" name="acme-api-type" type="radio" value="v02" checked required>
-            Production</label>
-          <label><input class="js-acme-api-type" name="acme-api-type" type="radio" value="staging-v02" required>
-            Testing</label>
-          <br>
-          <input class="js-acme-directory-url" type="url" placeholder="ACME directory url">
-        </form>
+					<br />
+					<br />
+					<br />
+					<label
+						><input
+							class="js-acme-api-type"
+							name="acme-api-type"
+							type="radio"
+							value="v02"
+							checked
+							required
+						/>
+						Production</label
+					>
+					<label
+						><input
+							class="js-acme-api-type"
+							name="acme-api-type"
+							type="radio"
+							value="staging-v02"
+							required
+						/>
+						Testing</label
+					>
+					<br />
+					<input
+						class="js-acme-directory-url"
+						type="url"
+						placeholder="ACME directory url"
+					/>
+				</form>
 
-        <!-- Step 2 Create Account -->
-        <form class="js-acme-form js-acme-form-account">
-          <h1><label>What's your email?</label></h1>
-          <input class="js-acme-account-email acme-account-email" type="email" placeholder="john@doe.family" required>
-          <div class="checkbox-array">
-            <label>
-              <input class="js-acme-account-tos" type="checkbox" required>
-              <svg class="icon-checked-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-checked"></use>
-              </svg>
-              <svg class="icon-unchecked-box"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-unchecked"></use>
-              </svg>
-              Agree to &nbsp<a class="js-acme-tos-url" target="acme-tos">Let's Encrypt&trade; Terms of Service</a>?
-            </label>
-            <label>
-              <input class="js-greenlock-account-tos" type="checkbox" required>
-              <svg class="icon-checked-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-checked"></use>
-              </svg>
-              <svg class="icon-unchecked-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-unchecked"></use>
-              </svg>
-              Agree to &nbsp<a class="js-gl-tos" target="_blank" href="/legal/#terms">Greenlock&trade; Terms of Service</a>?
-            </label>
-          </div>
-          <!--
+				<!-- Step 2 Create Account -->
+				<form class="js-acme-form js-acme-form-account">
+					<h1><label>What's your email?</label></h1>
+					<input
+						class="js-acme-account-email acme-account-email"
+						type="email"
+						placeholder="john@doe.family"
+						required
+					/>
+					<div class="checkbox-array">
+						<label>
+							<input class="js-acme-account-tos" type="checkbox" required />
+							<svg
+								class="icon-checked-box"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-checked"></use>
+							</svg>
+							<svg
+								class="icon-unchecked-box"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-unchecked"></use>
+							</svg>
+							Agree to &nbsp;<a class="js-acme-tos-url" target="acme-tos"
+								>Let's Encrypt&trade; Terms of Service</a
+							>?
+						</label>
+						<label>
+							<input
+								class="js-greenlock-account-tos"
+								type="checkbox"
+								required
+							/>
+							<svg
+								class="icon-checked-box"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-checked"></use>
+							</svg>
+							<svg
+								class="icon-unchecked-box"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-unchecked"></use>
+							</svg>
+							Agree to &nbsp<a
+								class="js-gl-tos"
+								target="_blank"
+								href="/legal/#terms"
+								>Greenlock&trade; Terms of Service</a
+							>?
+						</label>
+					</div>
+					<!--
           <a href="#">advanced (use existing account)</a>
           <br>
           <br>
           -->
-          <button class="button-next js-account-next" type="submit">Next</button>
-          <div class="email-usage">
-            Why do we need your email?
-            We link your SSL certificates to the email you use so that you'll
-            be notified before the certificate expires and so you can manage
-            your certificates in the future.
-          </div>
-        </form>
+					<button class="button-next js-account-next" type="submit">
+						Next
+					</button>
+					<div class="email-usage">
+						Why do we need your email? We link your SSL certificates to the
+						email you use so that you'll be notified before the certificate
+						expires and so you can manage your certificates in the future.
+					</div>
+				</form>
 
-        <!-- Step 3 Set Challanges -->
-        <form class="js-acme-form js-acme-form-challenges">
+				<!-- Step 3 Set Challanges -->
+				<form class="js-acme-form js-acme-form-challenges">
+					<h1>Let's verify your domain</h1>
+					<div class="js-acme-challenges">
+						<div class="tabbed-selector">
+							<label>
+								<input
+									class="js-acme-challenge-type"
+									name="acme-challenge-type"
+									type="radio"
+									value="http-01"
+									checked
+									required
+								/>
+								File Upload
+								<div></div>
+							</label>
+							<label>
+								<input
+									class="js-acme-challenge-type"
+									name="acme-challenge-type"
+									type="radio"
+									value="dns-01"
+									required
+								/>
+								DNS Record
+								<div></div>
+							</label>
+						</div>
+						<div>
+							<div class="js-acme-verification-http-01">
+								<h3>Upload each file</h3>
+								<div class="js-acme-http">
+									<div class="http-verification-info file-preview">
+										<div class="paper-fold"></div>
+										<div>
+											<div class="file-ver-info-header">FILENAME</div>
+											<pre class="js-acme-ver-file-location">...loading</pre>
+										</div>
+										<hr />
+										<div>
+											<div class="file-ver-info-header">CONTENTS</div>
+											<pre class="js-acme-ver-content">...loading</pre>
+										</div>
+										<div class="download-file">
+											<svg
+												class="mdicon icon-download"
+												xmlns="http://www.w3.org/2000/svg"
+												viewbox="0 0 24 24"
+											>
+												<use xlink:href="#svg-download"></use>
+											</svg>
+											<a
+												class="js-download-verify-link"
+												href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4="
+												download="hello.txt"
+												target="_blank"
+											>
+												Download
+											</a>
+										</div>
+										<hr />
+										<div>
+											<div class="file-ver-info-header">LOCATION</div>
+											<pre class="js-acme-ver-uri">..loading</pre>
+										</div>
+									</div>
+									<br />
+								</div>
+							</div>
+							<div class="js-acme-verification-dns-01">
+								<h3>Set each DNS Record</h3>
+								<div class="js-acme-dns">
+									<div class="acme-ver-dns-label">TXT Host</div>
+									<div class="js-acme-ver-txt-host">loading...</div>
+									<div class="acme-ver-dns-label">TXT Value</div>
+									<div class="js-acme-ver-txt-value">loading...</div>
+									<br />
+								</div>
+								<p>
+									<strong>Warning</strong>: You should wait at least 30 seconds
+									after setting DNS records before continuing.
+								</p>
+								<p>
+									<strong>Google DNS Users</strong>: You may need to wait up to
+									5 minutes.
+								</p>
+							</div>
+						</div>
 
-          <h1>Let's verify your domain</h1>
-          <div class="js-acme-challenges">
-            <div class="tabbed-selector">
-              <label>
-                <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="http-01" checked required>
-                File Upload
-                <div></div>
-              </label>
-              <label>
-                <input class="js-acme-challenge-type" name="acme-challenge-type" type="radio" value="dns-01" required>
-                DNS Record
-                <div></div>
-              </label>
-            </div>
-            <div>
-              <div class="js-acme-verification-http-01">
-                <h3>Upload each file</h3>
-                <div class="js-acme-http">
-                  <div class="http-verification-info file-preview">
-                    <div class="paper-fold"></div>
-                    <div>
-                      <div class="file-ver-info-header">FILENAME</div>
-                      <pre class="js-acme-ver-file-location">...loading</pre>
-                    </div>
-                    <hr>
-                    <div>
-                      <div class="file-ver-info-header">CONTENTS</div>
-                      <pre class="js-acme-ver-content">...loading</pre>
-                    </div>
-                    <div class="download-file">
-                      <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <use xlink:href="#svg-download"></use>
-                      </svg>
-                      <a class="js-download-verify-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="hello.txt" target="_blank">
-                        Download
-                      </a>
-                    </div>
-                    <hr>
-                    <div>
-                      <div class="file-ver-info-header">LOCATION</div>
-                      <pre class="js-acme-ver-uri">..loading</pre>
-                    </div>
-                  </div>
-                  <br>
-                </div>
-              </div>
-              <div class="js-acme-verification-dns-01">
-                <h3>Set each DNS Record</h3>
-                <div class="js-acme-dns">
-                  <div class="acme-ver-dns-label">TXT Host</div>
-                  <div class="js-acme-ver-txt-host">loading...</div>
-                  <div class="acme-ver-dns-label">TXT Value</div>
-                  <div class="js-acme-ver-txt-value">loading...</div>
-                  <br>
-                </div>
-                <p><strong>Warning</strong>:
-                  You should wait at least 30 seconds after setting DNS records before continuing.</p>
-                <p><strong>Google DNS Users</strong>:
-                  You may need to wait up to 5 minutes.</p>
-              </div>
-            </div>
+						<div class="js-acme-wildcard-challenges">
+							<div class="js-acme-verification-wildcard">
+								<h3>Set each DNS Record (for wildcards)</h3>
+								<div class="js-acme-wildcard">
+									<div class="acme-ver-dns-label">TXT Host</div>
+									<div class="js-acme-ver-txt-host">loading...</div>
+									<div class="acme-ver-dns-label">TXT Value</div>
+									<div class="js-acme-ver-txt-value">loading...</div>
+									<br />
+								</div>
+								<p>
+									<strong>Warning</strong>: You should wait at least 30 seconds
+									after setting DNS records before continuing.
+								</p>
+								<p>
+									<strong>Google DNS</strong>: You may need to wait up to 5
+									minutes.
+								</p>
+							</div>
+						</div>
+					</div>
 
-            <div class="js-acme-wildcard-challenges">
-              <div class="js-acme-verification-wildcard">
-                <h3>Set each DNS Record (for wildcards)</h3>
-                <div class="js-acme-wildcard">
-                  <div class="acme-ver-dns-label">TXT Host</div>
-                  <div class="js-acme-ver-txt-host">loading...</div>
-                  <div class="acme-ver-dns-label">TXT Value</div>
-                  <div class="js-acme-ver-txt-value">loading...</div>
-                  <br>
-                </div>
-                <p><strong>Warning</strong>:
-                  You should wait at least 30 seconds after setting DNS records before continuing.</p>
-                <p><strong>Google DNS</strong>:
-                  You may need to wait up to 5 minutes.</p>
-              </div>
-            </div>
-          </div>
+					<button class="button-next" type="submit">Next</button>
+				</form>
 
-          <button class="button-next" type="submit">Next</button>
-        </form>
+				<!-- Step 4 Process Challanges -->
+				<form class="js-acme-form js-acme-form-poll">
+					Verifying Domains... (give us 5 seconds or so...)
+					<div class="js-challenge-responses" hidden>
+						Checking
+						<span class="js-challenge-response-altname">&nbsp;</span>
+						using <span class="js-challenge-response-type">&nbsp;</span> :
+						<span class="js-challenge-response-status">&nbsp;</span>
+					</div>
 
-        <!-- Step 4 Process Challanges -->
-        <form class="js-acme-form js-acme-form-poll">
-          Verifying Domains... (give us 5 seconds or so...)
-          <div class="js-challenge-responses" hidden>
-            Checking
-            <span class="js-challenge-response-altname">&nbsp;</span>
-            using <span class="js-challenge-response-type">&nbsp;</span>
-            : <span class="js-challenge-response-status">&nbsp;</span>
-          </div>
-
-          <!--
+					<!--
           <table class="js-acme-table-verifying">
             <thead>
               <tr>
@@ -278,42 +419,58 @@
 
           <button type="submit">Next</button>
           -->
-        </form>
+				</form>
 
-        <!-- Step 5 Get Certs -->
-        <form class="js-acme-form js-acme-form-download">
-          <div class="cert-download-container">
-            <h2><label>privkey.pem</label></h2>
-            <div class="acme-result-privkey file-preview">
-              <div class="paper-fold"></div>
-              <pre id="js-privkey">
-              </pre>
-            </div>
-            <div class="download-file">
-              <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-download"></use>
-              </svg>
-              <a id="js-download-privkey-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="privkey.pem" target="_blank">
-                Download
-              </a>
-            </div>
-            <h2><label>fullchain.pem</label></h2>
-            <div class="acme-result-fullchain file-preview">
-              <div class="paper-fold"></div>
-              <pre id="js-fullchain">
-              </pre>
-            </div>
-            <div class="download-file">
-              <svg class="mdicon icon-download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <use xlink:href="#svg-download"></use>
-              </svg>
-              <a id="js-download-fullchain-link" href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4=" download="fullchain.pem" target="_blank">
-                Download
-              </a>
-            </div>
-            <div>
-            <h3>node.js https server example</h3>
-            <pre><code>    'use strict';
+				<!-- Step 5 Get Certs -->
+				<form class="js-acme-form js-acme-form-download">
+					<div class="cert-download-container">
+						<h2><label>privkey.pem</label></h2>
+						<div class="acme-result-privkey file-preview">
+							<div class="paper-fold"></div>
+							<pre id="js-privkey"></pre>
+						</div>
+						<div class="download-file">
+							<svg
+								class="mdicon icon-download"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-download"></use>
+							</svg>
+							<a
+								id="js-download-privkey-link"
+								href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4="
+								download="privkey.pem"
+								target="_blank"
+							>
+								Download
+							</a>
+						</div>
+						<h2><label>fullchain.pem</label></h2>
+						<div class="acme-result-fullchain file-preview">
+							<div class="paper-fold"></div>
+							<pre id="js-fullchain"></pre>
+						</div>
+						<div class="download-file">
+							<svg
+								class="mdicon icon-download"
+								xmlns="http://www.w3.org/2000/svg"
+								viewbox="0 0 24 24"
+							>
+								<use xlink:href="#svg-download"></use>
+							</svg>
+							<a
+								id="js-download-fullchain-link"
+								href="data:text/octet-stream;base64,SGVsbG8gV29ybGQuLi4="
+								download="fullchain.pem"
+								target="_blank"
+							>
+								Download
+							</a>
+						</div>
+						<div>
+							<h3>node.js https server example</h3>
+							<pre><code>    'use strict';
 
     var https = require('https');
     var server = https.createServer({
@@ -325,9 +482,9 @@
       console.log('Listening on', this.address());
     })
             </code></pre>
-          </div>
+						</div>
 
-          <!--
+						<!--
             TODO
           <label>cert.pem</label>
           <textarea class="js-cert">-</textarea>
@@ -340,39 +497,60 @@
           <a href="#">Advanced (copy and paste)</a>
           <br>
           <button type="submit">Start Over</button>
-          -->
-        </form>
-      </div>
+          --></div>
+				</form>
 
-      <div><small><center>
-      <div>
-          A <a href="https://rootprojects.org/" target="_blank">Root</a> Project
-          | <a href="https://git.coolaj86.com/coolaj86/greenlock.html" target="_blank">View Source</a> (git)
-          | <a href="https://rootprojects.org/legal/#terms" target="_blank">Terms of Service</a>
-          | <a href="https://rootprojects.org/legal/#privacy" target="_blank">Privacy Policy</a>
-      </div>
-      <!-- or
+				<div>
+					<small
+						><center>
+							<div>
+								A
+								<a href="https://rootprojects.org/" target="_blank">Root</a>
+								Project |
+								<a
+									href="https://git.coolaj86.com/coolaj86/greenlock.html"
+									target="_blank"
+									>View Source</a
+								>
+								(git) |
+								<a href="https://rootprojects.org/legal/#terms" target="_blank"
+									>Terms of Service</a
+								>
+								|
+								<a
+									href="https://rootprojects.org/legal/#privacy"
+									target="_blank"
+									>Privacy Policy</a
+								>
+							</div>
+							<!-- or
         <pre><code>git clone https://git.coolaj86.com/coolaj86/greenlock.html.git</code></pre>
         Or view the live site code (same as live-site branch):
         <pre><code>wget https://greenlock.domains --mirror --convert-links --adjust-extension --page-requisites --no-parent</code></pre>
       -->
-      </center></small></div>
-      <br>
+						</center></small
+					>
+				</div>
+				<br />
 
+				<script src="./js/bluecrypt-acme.js"></script>
+				<script src="./js/greenlock.js"></script>
 
-        <script src="./js/bluecrypt-acme.js"></script>
-        <script src="./js/greenlock.js"></script>
+				<!-- Global site tag (gtag.js) - Google Analytics -->
+				<script
+					async
+					src="https://www.googletagmanager.com/gtag/js?id=UA-118745161-2"
+				></script>
+				<script>
+					window.dataLayer = window.dataLayer || [];
+					function gtag() {
+						dataLayer.push(arguments);
+					}
+					gtag("js", new Date());
 
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-118745161-2"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', 'UA-118745161-2');
-        </script>
-      </div>
-    </div>
-  </body>
+					gtag("config", "UA-118745161-2");
+				</script>
+			</div>
+		</div>
+	</body>
 </html>

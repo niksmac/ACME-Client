@@ -1,115 +1,114 @@
 .column-row {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  align-items: center;
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	align-items: center;
 }
 
 body {
-  position: relative;
-  margin-top: 5.777777778em;
-  min-height: 36em;
-  font-size: 18px;
-  font-family: 'Source Sans Pro', sans-serif;
-  font-stretch: normal;
-  line-height: 1.33;
-  letter-spacing:  -0.4px;
-  color: #1a1a1a;
-  opacity: 0;
+	position: relative;
+	margin-top: 5.777777778em;
+	min-height: 36em;
+	font-size: 18px;
+	font-family: "Source Sans Pro", sans-serif;
+	font-stretch: normal;
+	line-height: 1.33;
+	letter-spacing: -0.4px;
+	color: #1a1a1a;
+	opacity: 0;
 }
 
 h1 {
-  font-size: 2.666666667em;
-  max-width: 8em;
-  text-align: center;
+	font-size: 2.666666667em;
+	max-width: 8em;
+	text-align: center;
 }
 
 input {
-  font-size: 1em;
-  padding: 0.444444444em;
-  border: solid #d9d9d9 1px;
-  border-radius: 2px;
-  font-family: inherit;
+	font-size: 1em;
+	padding: 0.444444444em;
+	border: solid #d9d9d9 1px;
+	border-radius: 2px;
+	font-family: inherit;
 }
 
 button {
-  padding: 0.444444444em 1.2em;
-  font-size: 1em;
-  background-color: #5bc17f;
-  border: solid 1px #5bc17f;
-  border-radius: 2px;
-  font-weight: normal;
-  font-stretch: normal;
-  letter-spacing: -0.4px;
-  font-family: inherit;
-  text-align: center;
-  color: white;
-  height: 40px;
-  line-height: 1.13;
+	padding: 0.444444444em 1.2em;
+	font-size: 1em;
+	background-color: #5bc17f;
+	border: solid 1px #5bc17f;
+	border-radius: 2px;
+	font-weight: normal;
+	font-stretch: normal;
+	letter-spacing: -0.4px;
+	font-family: inherit;
+	text-align: center;
+	color: white;
+	height: 40px;
+	line-height: 1.13;
 }
 
 .acme-advanced-fields {
-  position: absolute;
-  bottom: 0;
-  padding: 1em;
-  text-align: center;
+	position: absolute;
+	bottom: 0;
+	padding: 1em;
+	text-align: center;
 }
 
 .domain-subtext {
-  font-size: 0.833333333em;
-  color: #666;
-  text-align: center;
-  margin: 0.5em;
+	font-size: 0.833333333em;
+	color: #666;
+	text-align: center;
+	margin: 0.5em;
 }
 
 input#acme-domains:before {
-  content: "Secure | https://";
+	content: "Secure | https://";
 }
 
 .domain-psuedo-input {
-  display: inline-block;
-  margin-right: .6666667em;
-  border: solid #d9d9d9 1px;
-  border-radius: 2px;
-  padding: 0.44444444em;
-  color: #d9d9d9;
+	display: inline-block;
+	margin-right: 0.6666667em;
+	border: solid #d9d9d9 1px;
+	border-radius: 2px;
+	padding: 0.44444444em;
+	color: #d9d9d9;
 }
 
 input#acme-domains {
-  border: none;
-  padding: 0;
-  padding-right: 0;
-  width: 17.2222222em;
-  color: #222;
+	border: none;
+	padding: 0;
+	padding-right: 0;
+	width: 17.2222222em;
+	color: #222;
 }
 
 input#acme-domains:focus {
-  outline: none;
+	outline: none;
 }
 
 span.secure-green {
-  color: #5bc17f;
+	color: #5bc17f;
 }
 
 .why-you-need {
-  width: 26.555556em;
+	width: 26.555556em;
 }
 
 body.js-app-ready {
-  transition: opacity 0.2s;
-  opacity: 1;
+	transition: opacity 0.2s;
+	opacity: 1;
 }
 
 .acme-advanced-fields > * {
-  margin: 0 0.5em;
+	margin: 0 0.5em;
 }
 
 .js-javascript-warning {
-  border: solid 1px red;
-  background-color: #ffc0cb40;
-  border-radius: 2px;
-  margin: 0.6em;
-  padding: 0.5em 1em;
-  width: 30em;
- }
- 
+	border: solid 1px red;
+	background-color: #ffc0cb40;
+	border-radius: 2px;
+	margin: 0.6em;
+	padding: 0.5em 1em;
+	width: 30em;
+}
