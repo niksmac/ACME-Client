@@ -184,6 +184,10 @@ pre {
 	margin: 1em 0;
 }
 
+button {
+	cursor: pointer;
+}
+
 .tabbed-selector label {
 	width: 50%;
 	padding: 0.5em 0;
