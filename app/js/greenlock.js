@@ -514,12 +514,14 @@
 						return Keypairs.export({ jwk: serverJwk }).then(function(keyPem) {
 							console.info("WINNING!");
 							console.info(certs);
-							$qs("#js-fullchain").innerHTML = [
+							var fullChainText = [
 								certs.cert.trim() + "\n",
 								certs.chain + "\n"
 							].join("\n");
+
+							$qs("#js-fullchain").innerHTML = fullChainText;
 							$qs("#js-download-fullchain-link").href =
-								"data:text/octet-stream;base64," + window.btoa(certs);
+								"data:text/octet-stream;base64," + window.btoa(fullChainText);
 
 							$qs("#js-privkey").innerHTML = keyPem;
 							$qs("#js-download-privkey-link").href =
